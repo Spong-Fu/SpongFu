@@ -1,4 +1,4 @@
-package com.sponout.spongout;
+package com.spongout.spongout;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
