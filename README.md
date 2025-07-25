@@ -3,7 +3,7 @@
 
 ## What is this Game?
 
-It's a fast-paced, chaotic multiplayer physics game called **"Sumo Sponges"**. The goal is simple: be the last player on a shrinking circular platform. You control a "sponge" that automatically grows larger and more powerful the longer you wait to move. The game is designed for hilarious, unpredictable moments and frantic tests of timing.
+It's a fast-paced, chaotic multiplayer physics game called **"SpongOut"**/**"Sumo Sponges"**. The goal is simple: be the last player on a shrinking circular platform. You control a "sponge" that automatically grows larger and more powerful the longer you wait to move. The game is designed for hilarious, unpredictable moments and frantic tests of timing.
 
 ## How does it work?
 
