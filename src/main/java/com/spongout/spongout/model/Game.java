@@ -5,14 +5,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
 public class Game {
 
+    private UUID gameId;
     private GameState currentState;
-    private final Map<String, Player> players;
+    private final Map<String, Player> players = new ConcurrentHashMap<>();
     private double currentArenaRadius;
     private long roundStartTime;
     private long lastTickTime; // Used to calculate deltaTime for physics
@@ -30,8 +32,8 @@ public class Game {
      * Constructor to initialize a new game instance with default values.
      */
     public Game() {
+        this.gameId = UUID.randomUUID();
         this.currentState = GameState.WAITING_FOR_PLAYERS;
-        this.players = new ConcurrentHashMap<>(); // Still needs to be thread-safe
         this.currentArenaRadius = GameConstants.AREA_INITIAL_RADIUS;
 
         //rest should be set by gameEngine when round starts
