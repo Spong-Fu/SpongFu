@@ -16,7 +16,10 @@ It's a fast-paced, chaotic multiplayer physics game called **"Sumo Sponges"**. T
 4.  **Sudden Death:** If a round lasts longer than 30 seconds, the platform itself starts to shrink, forcing the remaining players into a final, chaotic confrontation until only one is left.
 
 The game runs entirely in a web browser, with a server managing all the physics and player positions to ensure the experience is fair and synchronized for everyone.
-### Backend Developer (The World Builder)
+
+### How are we going to build it?
+
+#### Backend Developer (The World Builder)
 
 Your role is to create the single, consistent reality of the game world. You will build a centralized server application that simulates all game logic and physics, ensuring a fair and synchronized experience for every player.
 
@@ -48,7 +51,7 @@ Your role is to create the single, consistent reality of the game world. You wil
 
 ---
 
-### Frontend Developer (The Experience Designer)
+#### Frontend Developer (The Experience Designer)
 
 Your role is to bring the game world to life in the browser. You will create a responsive and visually engaging client that accurately presents the state of the game and provides players with a seamless way to interact with it.
 
