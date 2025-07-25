@@ -1,5 +1,21 @@
 # SpongOut
 
+
+### What is this Game?
+
+It's a fast-paced, chaotic multiplayer physics game called **"Sumo Sponges"**. The goal is simple: be the last player on a shrinking circular platform. You control a "sponge" that automatically grows larger and more powerful the longer you wait to move. The game is designed for hilarious, unpredictable moments and frantic tests of timing.
+
+### How does it work?
+
+1.  **Simple Controls, Chaotic Aiming:** You have only one button. Pressing it launches your sponge. However, your aim is determined by a pointer that is constantly spinning at high speed. You have to press the button at the exact right moment to go where you want.
+
+2.  **Risk vs. Reward:** The longer you wait without moving, the bigger your sponge gets. A bigger sponge means a more powerful launch, capable of sending opponents flying. But it also makes you a bigger, slower target.
+
+3.  **Last Sponge Standing:** You win a round by using your launch to collide with other players and knock them off the platform.
+
+4.  **Sudden Death:** If a round lasts longer than 30 seconds, the platform itself starts to shrink, forcing the remaining players into a final, chaotic confrontation until only one is left.
+
+The game runs entirely in a web browser, with a server managing all the physics and player positions to ensure the experience is fair and synchronized for everyone.
 ### Backend Developer (The World Builder)
 
 Your role is to create the single, consistent reality of the game world. You will build a centralized server application that simulates all game logic and physics, ensuring a fair and synchronized experience for every player.
