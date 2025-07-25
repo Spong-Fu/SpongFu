@@ -1,0 +1,114 @@
+<h1>SpongOut</h1>
+<h2>What is this Game?</h2>
+<p>It's a fast-paced, chaotic multiplayer physics game called <strong>&quot;SpongOut&quot;</strong>/<strong>&quot;Sumo Sponges&quot;</strong>. The goal is simple: be the last player on a shrinking circular platform. You control a &quot;sponge&quot; that automatically grows larger and more powerful the longer you wait to move. The game is designed for hilarious, unpredictable moments and frantic tests of timing.</p>
+<h2>How does it work?</h2>
+<ol>
+<li>
+<p><strong>Simple Controls, Chaotic Aiming:</strong> You have only one button. Pressing it launches your sponge. However, your aim is determined by a pointer that is constantly spinning at high speed. You have to press the button at the exact right moment to go where you want.</p>
+</li>
+<li>
+<p><strong>Risk vs. Reward:</strong> The longer you wait without moving, the bigger your sponge gets. A bigger sponge means a more powerful launch, capable of sending opponents flying. But it also makes you a bigger, slower target.</p>
+</li>
+<li>
+<p><strong>Last Sponge Standing:</strong> You win a round by using your launch to collide with other players and knock them off the platform.</p>
+</li>
+<li>
+<p><strong>Sudden Death:</strong> If a round lasts longer than 30 seconds, the platform itself starts to shrink, forcing the remaining players into a final, chaotic confrontation until only one is left.</p>
+</li>
+</ol>
+<p>The game runs entirely in a web browser, with a server managing all the physics and player positions to ensure the experience is fair and synchronized for everyone.</p>
+<h2>How are we going to build it?</h2>
+<h3>Backend Developer (The World Builder)</h3>
+<p>Your role is to create the single, consistent reality of the game world. You will build a centralized server application that simulates all game logic and physics, ensuring a fair and synchronized experience for every player.</p>
+<p><strong>Key Responsibilities:</strong></p>
+<ol>
+<li>
+<p><strong>Establish the Foundation:</strong></p>
+<ul>
+<li>Initialize a Spring Boot application using Maven dependencies for Web, WebSocket, and Lombok.</li>
+<li>Configure a WebSocket endpoint (e.g., <code>/game-websocket</code>) and enable the STOMP message broker to manage communication channels.</li>
+</ul>
+</li>
+<li>
+<p><strong>Architect the Game Flow:</strong></p>
+<ul>
+<li>Implement a clear state machine for the game's lifecycle (<code>WAITING</code>, <code>COUNTDOWN</code>, <code>RUNNING</code>, <code>SUDDEN_DEATH</code>, <code>ROUND_OVER</code>).</li>
+<li>Develop a central <code>GameService</code> to manage timers and state transitions based on player count and game rules.</li>
+</ul>
+</li>
+<li>
+<p><strong>Construct the Simulation Engine:</strong></p>
+<ul>
+<li>Create a fixed-rate Game Loop using a <code>ScheduledExecutorService</code> (e.g., running a <code>tick()</code> method 30 times per second).</li>
+<li><strong>In each <code>tick()</code> cycle, your engine will systematically:</strong>
+a.  Update player attributes like pointer <code>angle</code> and <code>mass</code>.
+b.  Process incoming player commands (the &quot;expel&quot; action) by applying forces to player velocities.
+c.  Simulate the physics interactions, including resolving all player-vs-player collisions and applying environmental effects like friction.
+d.  Update all player positions based on their newly calculated velocities.
+e.  Enforce game rules, such as shrinking the arena during <code>SUDDEN_DEATH</code> and checking for player eliminations.</li>
+</ul>
+</li>
+<li>
+<p><strong>Manage Data and Communication:</strong></p>
+<ul>
+<li>Define the core <code>Player</code> model (POJO) to hold all server-side data: <code>sessionId</code>, <code>nickname</code>, position, velocity, mass, etc.</li>
+<li>Implement a <code>@MessageMapping</code> controller to handle incoming client commands sent to <code>/app/game.action</code>.</li>
+<li>Use Spring's <code>SimpMessagingTemplate</code> to broadcast game information to clients:
+<ul>
+<li><strong><code>/topic/game.state/main</code>:</strong> Continuously stream the complete game state (player positions, angles, arena size) after each <code>tick</code>.</li>
+<li><strong><code>/topic/game.events/main</code>:</strong> Publish notifications for discrete events like <code>PLAYER_JOINED</code>, <code>ROUND_WINNER</code>, and <code>COUNTDOWN</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3>Frontend Developer (The Experience Designer)</h3>
+<p>Your role is to bring the game world to life in the browser. You will create a responsive and visually engaging client that accurately presents the state of the game and provides players with a seamless way to interact with it.</p>
+<p><strong>Key Responsibilities:</strong></p>
+<ol>
+<li>
+<p><strong>Craft the User Interface:</strong></p>
+<ul>
+<li>Design the HTML structure, including a <code>&lt;canvas&gt;</code> for game rendering and a &quot;lobby&quot; view for nickname entry.</li>
+<li>Integrate the necessary libraries: <code>p5.js</code> for canvas drawing and <code>StompJs</code> for real-time networking.</li>
+</ul>
+</li>
+<li>
+<p><strong>Establish the Communication Link:</strong></p>
+<ul>
+<li>Implement the logic for connecting to the backend's WebSocket endpoint using <code>StompJs</code> when the player decides to join.</li>
+<li>Upon a successful connection, immediately subscribe the client to two key destinations:
+<ul>
+<li><code>/topic/game.state/main</code> for high-frequency game state updates.</li>
+<li><code>/topic/game.events/main</code> for game flow notifications.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Implement Player Controls:</strong></p>
+<ul>
+<li>Create a simple and responsive input handler that listens for the <code>Spacebar</code> key press.</li>
+<li>On input, publish a single, well-defined message (<code>{&quot;action&quot;: &quot;expel&quot;}</code>) to the <code>/app/game.action</code> destination to signal the player's intent to the server.</li>
+</ul>
+</li>
+<li>
+<p><strong>Render the Dynamic Scene:</strong></p>
+<ul>
+<li>Utilize the <code>p5.js</code> <code>draw()</code> function as your main rendering loop. This loop will read from a <code>latestGameState</code> variable that is continuously updated by your STOMP subscription.</li>
+<li><strong>In every frame, your <code>draw()</code> function will:</strong>
+a.  Clear the canvas to prepare for the new frame.
+b.  Draw the game arena, using the <code>arenaRadius</code> from the server's data to ensure it animates correctly during Sudden Death.
+c.  Iterate through the <code>players</code> array received from the server.
+d.  For each player, render their sponge at their server-provided <code>x, y</code> coordinates, draw their aiming pointer based on the <code>angle</code>, and display their <code>nickname</code> as text above them.</li>
+</ul>
+</li>
+<li>
+<p><strong>Display Game Information:</strong></p>
+<ul>
+<li>Use the data from the <code>/topic/game.events/main</code> subscription to update the UI with contextual information.</li>
+<li>This includes displaying the pre-round countdown, announcing the round winner, and updating a persistent scoreboard that shows player rankings.</li>
+</ul>
+</li>
+</ol>
