@@ -1,7 +1,6 @@
 package com.spongout.spongout.model;
 
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

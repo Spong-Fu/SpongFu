@@ -1,8 +1,8 @@
 package com.spongout.spongout.model;
 
-import com.spongout.spongout.config.GameConstants;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.UUID;
@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
-public class Game {
+public class GameInstance {
 
     private UUID gameId;
     private GameState currentState;
@@ -31,10 +31,9 @@ public class Game {
     /**
      * Constructor to initialize a new game instance with default values.
      */
-    public Game() {
+    public GameInstance() {
         this.gameId = UUID.randomUUID();
         this.currentState = GameState.WAITING_FOR_PLAYERS;
-        this.currentArenaRadius = GameConstants.AREA_INITIAL_RADIUS;
 
         //rest should be set by gameEngine when round starts
     }
