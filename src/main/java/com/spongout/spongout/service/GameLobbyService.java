@@ -24,11 +24,9 @@ import java.util.concurrent.ScheduledFuture;
 @RequiredArgsConstructor
 public class GameLobbyService {
 
-    {
-        log.info("Initializing GameLobbyService");
-    }
+    private static final String USER_PRIVATE_QUEUE = "/queue/private-user";
 
-    // --- DEPENDENCY INJECTIONS XD (I know You love it :*) ---
+    // --- DEPENDENCY INJECTIONS XD (I know You love it) ---
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
 
@@ -37,6 +35,7 @@ public class GameLobbyService {
 
     //reverse lookup for player disconnection
     private final Map<String, UUID> playerSessionToGameIdMap = new ConcurrentHashMap<>();
+
 
     //waiting room for new players
     private final List<Player> waitingRoom = new CopyOnWriteArrayList<>();
@@ -157,7 +156,7 @@ public class GameLobbyService {
         for (Player player : players) {
             log.info("Sending game start notification to player {} (sessionId: {})", player.getNickname(), player.getSessionId());
             //it probably wont work rn
-            messagingTemplate.convertAndSendToUser(player.getSessionId(), "/user/queue/private", gameStartPayload);
+            messagingTemplate.convertAndSend(USER_PRIVATE_QUEUE + player.getSessionId(), gameStartPayload);
         }
 
         //todo start actual game here!
