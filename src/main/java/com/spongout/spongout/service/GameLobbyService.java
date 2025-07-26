@@ -24,6 +24,10 @@ import java.util.concurrent.ScheduledFuture;
 @RequiredArgsConstructor
 public class GameLobbyService {
 
+    {
+        log.info("Initializing GameLobbyService");
+    }
+
     // --- DEPENDENCY INJECTIONS XD (I know You love it :*) ---
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
@@ -45,10 +49,12 @@ public class GameLobbyService {
 
     public void handlePlayerJoin(String nickname, String sessionId) {
         synchronized (waitingRoomLock) {
+            log.info("Player joining: nickname={}, sessionId={}", nickname, sessionId);
             Player newPlayer = new Player(nickname, sessionId);
 
             waitingRoom.add(newPlayer);
             int waitingRoomSize = waitingRoom.size();
+            log.debug("Current waiting room size: {}", waitingRoomSize);
 
             if (waitingRoomSize >= gameConstants.getMaxPlayersInLobby()) {
                 log.info("LOBBY FULL. LET'S START A GAME!");
@@ -68,11 +74,14 @@ public class GameLobbyService {
     }
 
     public void handlePlayerDisconnect(String sessionId) {
+        log.info("Handling player disconnect for sessionId: {}", sessionId);
 
         boolean removedFromWaitingRoom = waitingRoom.removeIf(p -> p.getSessionId().equals(sessionId));
 
         if (removedFromWaitingRoom) {
+            log.info("Player {} removed from waiting room. Current waiting room size: {}", sessionId, waitingRoom.size());
             if (waitingRoom.size() < gameConstants.getMinPlayersToStart()) {
+                log.info("Players count {} is below minimum {} required to start", waitingRoom.size(), gameConstants.getMinPlayersToStart());
                 if (countdownTask != null) {
                     cancelCountdown();
                 }
@@ -95,10 +104,12 @@ public class GameLobbyService {
 
     private void startLobbyCountdown() {
         // TODO: Implement this method based on the specification above.
+        log.info("Starting lobby countdown for {} seconds", gameConstants.getCountdownSeconds());
         countdownTask = taskScheduler.schedule(
                 this::formGameFromWaitingRoom,
                 Instant.now().plusSeconds(gameConstants.getCountdownSeconds())
         );
+        log.debug("Countdown task scheduled: {}", countdownTask);
     }
 
     private void cancelCountdown() {
@@ -108,11 +119,13 @@ public class GameLobbyService {
     }
 
     private void formGameFromWaitingRoom() {
+        log.info("Attempting to form a game from waiting room with {} players", waitingRoom.size());
         List<Player> playersForNewGame;
 
         synchronized (waitingRoomLock) {
             if(waitingRoom.size() < gameConstants.getMinPlayersToStart()) {
                 //it means someone left in the middle of matchmaking and handlePlayerDisconnection didnt work somehow, safety.
+                log.warn("Cannot form game - not enough players: {} (min required: {})", waitingRoom.size(), gameConstants.getMinPlayersToStart());
                 countdownTask = null;
                 return;
             }
@@ -125,19 +138,24 @@ public class GameLobbyService {
     }
 
     private void createNewGame(List<Player> players) {
+        log.info("Creating new game with {} players", players.size());
         GameInstance newGame = new GameInstance();
         UUID gameId = newGame.getGameId();
         log.info("Game {} created", gameId);
 
         for (Player player : players) {
+            log.info("Adding player {} (sessionId: {}) to game {}", player.getNickname(), player.getSessionId(), gameId);
             newGame.getPlayers().put(player.getSessionId(), player);
             playerSessionToGameIdMap.put(player.getSessionId(), gameId);
         }
+        log.info("Saving game {} to repository", gameId);
         gameRepository.save(newGame);
 
         var gameStartPayload = new GameStartDto(gameId);
+        log.info("Created GameStartDto payload with gameId: {}", gameId);
 
         for (Player player : players) {
+            log.info("Sending game start notification to player {} (sessionId: {})", player.getNickname(), player.getSessionId());
             //it probably wont work rn
             messagingTemplate.convertAndSendToUser(player.getSessionId(), "/user/queue/private", gameStartPayload);
         }

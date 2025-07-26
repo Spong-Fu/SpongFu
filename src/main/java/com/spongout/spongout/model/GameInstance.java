@@ -2,12 +2,14 @@ package com.spongout.spongout.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @Getter
 @Setter
 public class GameInstance {
@@ -36,5 +38,33 @@ public class GameInstance {
         this.currentState = GameState.WAITING_FOR_PLAYERS;
 
         //rest should be set by gameEngine when round starts
+    }
+
+    public void spawnPlayers(double playerInitialMass) {
+        // We'll spawn players in the inner 80% of the arena to give them some space.
+        final double spawnRadius = this.currentArenaRadius * 0.8;
+
+        for (Player player : players.values()) {
+            // Reset all physics and state for the new round
+            player.resetForNewRound();
+            player.setMass(playerInitialMass);
+
+            double spawnX, spawnY;
+
+            // The Rejection Sampling loop
+            do {
+                // 1. Pick a random point in the bounding square [-spawnRadius, +spawnRadius]
+                spawnX = ThreadLocalRandom.current().nextDouble(-spawnRadius, spawnRadius);
+                spawnY = ThreadLocalRandom.current().nextDouble(-spawnRadius, spawnRadius);
+
+                // 2. Check if the point is inside the circle. If not, the loop repeats.
+            } while (spawnX * spawnX + spawnY * spawnY > spawnRadius * spawnRadius);
+
+            // 3. We have a valid position. Assign it to the player.
+            player.setX(spawnX);
+            player.setY(spawnY);
+
+            log.info("Spawning player {} at ({}, {})", player.getNickname(), spawnX, spawnY);
+        }
     }
 }
