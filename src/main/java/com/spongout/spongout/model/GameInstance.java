@@ -43,11 +43,10 @@ public class GameInstance {
     public void spawnPlayers(double playerInitialMass) {
         // We'll spawn players in the inner 80% of the arena to give them some space.
         final double spawnRadius = this.currentArenaRadius * 0.8;
-
         for (Player player : players.values()) {
             // Reset all physics and state for the new round
             player.resetForNewRound();
-            player.setMass(playerInitialMass);
+            player.setSize(playerInitialMass);
 
             double spawnX, spawnY;
 

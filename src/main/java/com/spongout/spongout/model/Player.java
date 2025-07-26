@@ -4,7 +4,6 @@ package com.spongout.spongout.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.security.auth.Subject;
 import java.security.Principal;
 
 @Getter
@@ -20,7 +19,7 @@ public class Player implements Principal {
     //Physics
     private double x, y;
     private double velocityX, velocityY;
-    private double mass;
+    private double size;
     private double angle;
 
     private volatile boolean wantsToExpel; //not sure if this will be needed.

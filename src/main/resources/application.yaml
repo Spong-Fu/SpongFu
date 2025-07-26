@@ -11,14 +11,16 @@ app:
       round-max-seconds: 20
       arena-initial-radius: 500.0
       player-starting-mass: 1.0
+      tick-rate-ms: 16 # 16 = about 60fps (1000/60)
 
 # Add logging configuration for WebSocket/STOMP debugging
 logging:
   level:
+    com.spongout.spongout: DEBUG
     org:
       springframework:
         messaging: DEBUG
         messaging.simp: TRACE
         web:
           socket: DEBUG
-          socket.messaging: TRACE
+          socket.messaging: DEBUG

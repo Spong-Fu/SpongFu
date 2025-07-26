@@ -28,7 +28,7 @@ public class GameLobbyService {
 
     // --- DEPENDENCY INJECTIONS XD (I know You love it) ---
     private final GameRepository gameRepository;
-    private final PlayerRepository playerRepository;
+    private final GameExecutionService executionService;
 
     private final SimpMessagingTemplate messagingTemplate;
     private final TaskScheduler taskScheduler;
@@ -155,10 +155,8 @@ public class GameLobbyService {
 
         for (Player player : players) {
             log.info("Sending game start notification to player {} (sessionId: {})", player.getNickname(), player.getSessionId());
-            //it probably wont work rn
             messagingTemplate.convertAndSend(USER_PRIVATE_QUEUE + player.getSessionId(), gameStartPayload);
         }
-
-        //todo start actual game here!
+        executionService.startRound(gameId);
     }
 }
