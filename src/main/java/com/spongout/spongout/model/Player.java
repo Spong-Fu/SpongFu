@@ -4,9 +4,12 @@ package com.spongout.spongout.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.security.auth.Subject;
+import java.security.Principal;
+
 @Getter
 @Setter
-public class Player {
+public class Player implements Principal {
 
     private final String nickname;
     private final String sessionId;
@@ -41,5 +44,9 @@ public class Player {
         // Position (x, y) and initial mass should be set by the GameEngine when spawning.
     }
 
+    @Override
+    public String getName() {
+        return this.getNickname();
+    }
 }
 

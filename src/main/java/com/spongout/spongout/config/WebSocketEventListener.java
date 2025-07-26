@@ -1,6 +1,7 @@
 package com.spongout.spongout.config;
 
 import com.spongout.spongout.service.GameEngine;
+import com.spongout.spongout.service.GameLobbyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -13,16 +14,18 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 @RequiredArgsConstructor
 public class WebSocketEventListener {
 
-    private final GameEngine gameEngine;
+    private final GameLobbyService gameLobbyService;
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         //dont know yet
+        log.debug("Player {} connected!", event.getUser().getName());
     }
 
     @EventListener
     public void handleWebSocketDisconnectEvent(SessionDisconnectEvent event) {
         //todo: call some gameEngine disconnection method.
+        gameLobbyService.handlePlayerDisconnect(event.getSessionId());
     }
 
 }
