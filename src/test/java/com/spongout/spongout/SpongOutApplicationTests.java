@@ -1,4 +1,4 @@
-package com.sponout.spongout;
+package com.spongout.spongout;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

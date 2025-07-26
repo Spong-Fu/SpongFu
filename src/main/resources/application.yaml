@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: SpongOut
+
+app:
+  config:
+    game:
+      min-players-to-start: 2
+      countdown-seconds: 5
+      round-max-seconds: 20
+      arena-initial-radius: 500.0;
