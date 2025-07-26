@@ -1,5 +1,53 @@
+const drawTriangleChunk = (x, y, size) => {
+	beginShape();
+	for (let i=0; i<3; i++) {
+		let angle = random(TWO_PI);
+		let radius = random(size /2, size);
+		let vx = x + radius * cos(angle);
+		let vy = y + radius * sin(angle);
+		vertex(vx, vy);
+	}
+	endShape(CLOSE);
+}
+
+const drawHSBBackground = () => {
+	push();
+	colorMode(HSB, 360, 100, 100, 255);
+	noStroke();
+	const density = 100; 
+	for (let x=0; x<width+density; x+=density) {
+		for (let y =0; y<height + density; y+=density) {
+		let h = random(20, 40);
+		let s = random(80,100);
+		let b = random(70, 100);
+		fill(h, s, b, 150);
+		drawTriangleChunk(x, y, density);
+
+	}
+ }
+	pop();
+}
+
+
+const drawBackground = () => {
+	push();
+	noStroke();
+	const density = 100; //triangle size
+	for (let x=0; x<width+density; x+=density) {
+		for (let y=0; y<height+density; y += density) {
+			let r = random(30, 60);
+			let g = random(25, 40);
+			let b = random(20, 30);
+			fill(r, g, b, 150);
+			drawTriangleChunk(x, y, density);
+		}
+	}
+	pop();
+}
+
+
+//canvas takes up 80% of screen and sets height to desired aspect ratio.
 const dynamicSizedArenaAndPlatform = (aspectRatioWidth, aspectRatioHeight) => {
-	//canvas takes up 80% of screen and sets height to desired aspect ratio.
 	const arena = { w: window.innerWidth * .8, h: (window.innerWidth * .8) * (aspectRatioHeight/aspectRatioWidth) };
 	const platformWidth = arena.w * .5;
 	const platformHeight = platformWidth * .35;
@@ -32,7 +80,8 @@ function setup() {
 }
 
 function draw() {
-	background(34)
+	//background(34)
+	drawBackground();
 
 	//Draw platform
 	fill("gray")
