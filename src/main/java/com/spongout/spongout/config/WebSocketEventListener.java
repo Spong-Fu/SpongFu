@@ -19,7 +19,6 @@ public class WebSocketEventListener {
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         //dont know yet
-        log.debug("Player {} connected!", event.getUser().getName());
     }
 
     @EventListener
