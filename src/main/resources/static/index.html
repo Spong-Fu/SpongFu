@@ -18,6 +18,17 @@
 
 	<body>
 		<h1>TRY NOT TO SPONG OUT</h1>
-		<div id="game-container"></div>
+
+    <div id="lobby">
+        <input type="text" id="nickname" placeholder="Enter your nickname" maxlength="12">
+        <button id="join-button">Join Game</button>
+    </div>
+
+    <div id="game-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    
+    <script src="sketch.js"></script>
 	</body>
 </html>
