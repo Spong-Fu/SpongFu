@@ -22,7 +22,7 @@ public class Player implements Principal {
     private double size;
     private double angle;
 
-    private volatile boolean wantsToExpel; //not sure if this will be needed.
+    private volatile boolean goingToExpel; //not sure if this will be needed.
 
     public Player(String nickname, String sessionId) {
         this.score = 0;
@@ -37,7 +37,7 @@ public class Player implements Principal {
      */
     public void resetForNewRound() {
         this.isEliminated = false;
-        this.wantsToExpel = false;
+        this.goingToExpel = false;
         this.velocityX = 0;
         this.velocityY = 0;
         // Position (x, y) and initial mass should be set by the GameEngine when spawning.
@@ -46,6 +46,14 @@ public class Player implements Principal {
     @Override
     public String getName() {
         return this.getNickname();
+    }
+
+    public void changeSize(double value) {
+        this.size += value;
+    }
+
+    public void changeAngle(double value) {
+        this.angle += value;
     }
 }
 

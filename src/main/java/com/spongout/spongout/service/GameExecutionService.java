@@ -3,7 +3,7 @@ package com.spongout.spongout.service;
 import com.spongout.spongout.config.GameConstants;
 import com.spongout.spongout.controller.dto.GameStateDto;
 import com.spongout.spongout.controller.dto.PlayerStateDto;
-import com.spongout.spongout.controller.payloads.GameEventPayload;
+import com.spongout.spongout.controller.dto.GameEventDto;
 import com.spongout.spongout.model.GameEventType;
 import com.spongout.spongout.model.GameInstance;
 import com.spongout.spongout.model.Player;
@@ -131,7 +131,7 @@ public class GameExecutionService {
 
             // Broadcast a final "ROUND_WINNER" event to a different topic.
             String eventDestination = String.format("/topic/game.events/%s", gameId);
-            messagingTemplate.convertAndSend(eventDestination, new GameEventPayload(GameEventType.ROUND_WINNER, winnerNickname));
+            messagingTemplate.convertAndSend(eventDestination, new GameEventDto(GameEventType.ROUND_WINNER, winnerNickname));
         }
         log.trace("tick() end for game: {}", gameId);
     }

@@ -17,4 +17,10 @@ public class GameConstants {
     private double arenaInitialRadius;
     private double playerStartingMass;
     private long tickRateMs;
+    
+    private double playerGrowthRate; // Mass per second
+    private double playerSpinRateRad; // Radians per second
+    private double frictionFactor; // Multiplier per frame
+    private long suddenDeathMs; // Time in ms before sudden death starts
+    private double arenaShrinkRate; // Radius units per second
 }

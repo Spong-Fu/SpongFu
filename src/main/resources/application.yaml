@@ -13,6 +13,12 @@ app:
       player-starting-mass: 1.0
       tick-rate-ms: 16 # 16 = about 60fps (1000/60)
 
+      player-growth-rate: 5.0 # Mass per second
+      player-spin-rate-rad: 6 # Math.PI * 2 (Radians per second, 1 full rotation)
+      friction-factor: 0.98 # Multiplier per frame
+      sudden-death-ms: 30000 # 30 seconds
+      arena-shrink-rate: 10.0 # Radius units per second
+
 # Add logging configuration for WebSocket/STOMP debugging
 logging:
   level:

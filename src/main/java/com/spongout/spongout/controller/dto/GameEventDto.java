@@ -1,4 +1,4 @@
-package com.spongout.spongout.controller.payloads;
+package com.spongout.spongout.controller.dto;
 
 import com.spongout.spongout.model.GameEventType;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GameEventPayload {
+public class GameEventDto {
 
     private GameEventType eventType;
 
@@ -17,11 +17,11 @@ public class GameEventPayload {
     private Integer value;
 
 
-    public GameEventPayload(GameEventType eventType, String message) {
+    public GameEventDto(GameEventType eventType, String message) {
         this(eventType, message, null);
     }
 
-    public GameEventPayload(GameEventType eventType) {
+    public GameEventDto(GameEventType eventType) {
         this(eventType, null, null);
     }
 }
