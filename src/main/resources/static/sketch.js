@@ -1,137 +1,164 @@
-let players = []
-let pointer
-const numPlayers = 1
-// style out these 2 please
-const arena = { x: 0, y: 0, w: 1300, h: 700 }
-const platform = { x: 350, y: 500, w: 600, h: 200 }
-let gameOver = false
+let client; 
+let latestGameState = null; 
+let latestGameEvent = null; 
+let mySessionId = null; 
+
+
+const arena = { w: 1200, h: 700 };
 
 function setup() {
-	let canvas = createCanvas(arena.w, arena.h)
-	canvas.parent("game-container")
-	for (let i = 0; i < numPlayers; i++) {
-		players.push(
-			new Player(
-				random(width * 0.2, width * 0.8),
-				random(height * 0.2, height * 0.8),
-				color(random(50, 255), random(50, 255), random(50, 255))
-			)
-		)
-	}
+    let canvas = createCanvas(arena.w, arena.h);
+    canvas.parent("game-container");
+    
+    const joinButton = document.getElementById('join-button');
+    const nicknameInput = document.getElementById('nickname');
+    const lobby = document.getElementById('lobby');
+    const gameContainer = document.getElementById('game-container');
 
-	pointer = new Spinner()
+    joinButton.onclick = () => {
+        const nickname = nicknameInput.value.trim();
+        if (nickname) {
+            lobby.style.display = 'none';
+            gameContainer.style.display = 'block';
+            initNetworking(nickname);
+        } else {
+            alert('Please enter a nickname!');
+        }
+    };
 }
 
 function draw() {
-	background(34)
+    background(34); 
 
-	//Draw platform
-	fill("gray")
-	stroke(200)
-	rect(platform.x, platform.y, platform.w, platform.h)
+    if (!latestGameState) {
+        drawStatusText(latestGameEvent ? latestGameEvent.message : 'Connecting to server...');
+        return;
+    }
 
-	// Draw arena border
-	noFill()
-	stroke(200)
-	rect(0, 0, width, height)
+    push();
+    translate(width / 2, height / 2);
 
-	// Update and draw players
-	players.forEach((p) => p.update())
-	players.forEach((p) => p.draw())
+    const arenaRadius = latestGameState.arenaRadius || 300;
+    fill(100); 
+    noStroke();
+    ellipse(0, 0, arenaRadius * 2);
 
-	// Draw spinning pointer
-	pointer.update()
-	pointer.draw(players[0].pos)
-
-	//Loose condition
-	if (!gameOver && players[0].pos.y - players[0].r > height) {
-		noLoop()
-		gameOver = true
-	}
-
-	//Draw game over
-	if (gameOver) {
-		push()
-		textAlign(CENTER, TOP)
-		textSize(72)
-		fill("red")
-		noStroke()
-		text("Game Over", width / 2, 20)
-		pop()
-		return
-	}
+    latestGameState.players.forEach(player => {
+        if (player.isAlive) {
+            drawPlayer(player);
+        }
+    });
+    pop();
+    
+    if (latestGameEvent) {
+        if (latestGameEvent.type === 'COUNTDOWN' || latestGameEvent.type === 'ROUND_WINNER') {
+            drawStatusText(latestGameEvent.message);
+        }
+    }
 }
 
-function mousePressed() {
-	if (mouseButton === LEFT) {
-		players.forEach((p) => p.launch(pointer.angle))
-	}
+/**
+ * Draws a single player object received from the server.
+ * @param {object} player - The player data from the server.
+ */
+
+function drawPlayer(player) {
+    // Draw the sponge (circle)
+    fill(player.color || '#fff');
+    noStroke();
+    ellipse(player.position.x, player.position.y, player.mass * 2);
+
+    fill(255);
+    textAlign(CENTER, BOTTOM);
+    textSize(14);
+    text(player.nickname, player.position.x, player.position.y - player.mass - 5);
+
+    if (player.sessionId === mySessionId) {
+        push();
+        translate(player.position.x, player.position.y);
+        rotate(player.angle);
+        stroke(255);
+        strokeWeight(3);
+        line(0, 0, player.mass + 20, 0); // Pointer length grows with mass
+        pop();
+    }
 }
 
-class Player {
-	constructor(x, y, col) {
-		this.pos = createVector(x, y)
-		this.vel = createVector()
-		this.r = 20
-		this.col = col
-	}
-
-	update() {
-		// basic physics: apply velocity, friction, gravity optional
-		this.pos.add(this.vel)
-		this.vel.mult(0.98)
-
-		// bounce walls
-		if (this.pos.x < this.r || this.pos.x > width - this.r) {
-			this.vel.x *= -1
-		}
-		if (this.pos.y < this.r) {
-			this.vel.y *= -1
-		}
-
-		if (
-			this.pos.y + this.r > platform.y &&
-			this.pos.y - this.vel.y + this.r <= platform.y && // was above last frame
-			this.pos.x > platform.x &&
-			this.pos.x < platform.x + platform.w
-		) {
-			// snap to platform surface and reverse Y
-			this.pos.y = platform.y - this.r
-			this.vel.y *= -1
-		}
-	}
-
-	draw() {
-		fill(this.col)
-		noStroke()
-		ellipse(this.pos.x, this.pos.y, this.r * 2)
-	}
-
-	launch(angle) {
-		let force = p5.Vector.fromAngle(angle).mult(10).mult(-1)
-		this.vel.add(force)
-	}
+/**
+ * Draws large text in the center of the screen for status updates.
+ * @param {string} textToShow - The message to display.
+ */
+function drawStatusText(textToShow) {
+    push();
+    textAlign(CENTER, CENTER);
+    textSize(64);
+    fill("white");
+    stroke(0);
+    strokeWeight(4);
+    text(textToShow, width / 2, height / 2);
+    pop();
 }
 
-class Spinner {
-	constructor() {
-		this.angle = 0
-		this.speed = 0.1
-		this.len = 100
-		this.center = createVector(width / 2, height / 2)
-	}
+// --- Player Input ---
 
-	update() {
-		this.angle += this.speed
-	}
+function keyPressed() {
+    if (key === ' ' && client && client.active) {
+        client.publish({
+            destination: '/app/game.action',
+            body: JSON.stringify({ action: 'expel' })
+        });
+    }
+}
 
-	draw(atpos) {
-		push()
-		translate(atpos.x, atpos.y)
-		rotate(this.angle)
-		stroke(255)
-		strokeWeight(4)
-		line(0, 0, this.len, 0)
-		pop()
-	}
+// --- Networking Logic ---
+
+/**
+ * Initializes the StompJs client and connects to the server.
+ * @param {string} nickname - The player's chosen nickname.
+ */
+function initNetworking(nickname) {
+    client = new StompJs.Client({
+        brokerURL: 'ws://localhost:8080/ws',
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        debug: msg => console.log('[STOMP]', msg),
+
+        onConnect: (frame) => {
+            console.log('STOMP client connected.');
+            mySessionId = frame.headers['user-name'];
+            console.log('My session ID is:', mySessionId);
+
+            // --- Subscribe to Server Topics ---
+            // 1. Subscribe to the main game state topic
+            // This provides continuous updates of all player positions, etc.
+            client.subscribe('/topic/game.state/main', (message) => {
+                latestGameState = JSON.parse(message.body);
+            });
+
+            // 2. Subscribe to the game events topic
+            // This provides notifications for specific events like countdowns or wins.
+            client.subscribe('/topic/game.events/main', (message) => {
+                latestGameEvent = JSON.parse(message.body);
+                console.log("Game Event:", latestGameEvent);
+            });
+            
+            // --- Join the Game ---
+            // After connecting and subscribing, tell the server we want to join.
+            client.publish({
+                destination: '/app/game.action',
+                body: JSON.stringify({ action: 'join', nickname: nickname })
+            });
+
+            latestGameEvent = { type: 'INFO', message: 'Waiting for game to start...' };
+        },
+
+        onStompError: (frame) => {
+            console.error('Broker reported error: ' + frame.headers['message']);
+            console.error('Additional details: ' + frame.body);
+            latestGameEvent = { type: 'ERROR', message: 'Connection Error' };
+        }
+    });
+
+    client.activate();
 }
