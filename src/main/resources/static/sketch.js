@@ -1,8 +1,10 @@
-let client; 
-let latestGameState = null; 
-let latestGameEvent = null; 
-let mySessionId = null; 
+var client;
+var mySessionId = null; 
+var gameId = null; 
+var isJoining = false;
 
+var latestGameState = null;
+var latestGameEvent = null;
 
 const arena = { w: 1200, h: 700 };
 
@@ -15,79 +17,84 @@ function setup() {
     const lobby = document.getElementById('lobby');
     const gameContainer = document.getElementById('game-container');
 
-    joinButton.onclick = () => {
-        const nickname = nicknameInput.value.trim();
-        if (nickname) {
-            lobby.style.display = 'none';
-            gameContainer.style.display = 'block';
-            initNetworking(nickname);
-        } else {
-            alert('Please enter a nickname!');
-        }
-    };
+    if (joinButton && nicknameInput && lobby && gameContainer) {
+        joinButton.onclick = () => {
+            const nickname = nicknameInput.value.trim();
+            if (nickname) {
+                isJoining = true;
+                lobby.style.display = 'none';
+                gameContainer.style.display = 'block';
+                initNetworking(nickname);
+            } else {
+                alert('Please enter a nickname!');
+            }
+        };
+    } else {
+        console.error("Lobby elements not found! Ensure HTML is correct.");
+    }
 }
 
 function draw() {
-    background(34); 
+    background(34);
 
-    if (!latestGameState) {
-        drawStatusText(latestGameEvent ? latestGameEvent.message : 'Connecting to server...');
+    let status = '';
+    if (isJoining) {
+        status = 'Connecting...';
+    } else if (!gameId) {
+        status = 'In lobby, waiting for game to start...';
+    } else if (!latestGameState) {
+        status = `Game ${gameId} starting... Waiting for state.`;
+    }
+
+    if (status) {
+        drawStatusText(status);
         return;
     }
 
+    // --- Draw the Game World ---
     push();
     translate(width / 2, height / 2);
 
-    const arenaRadius = latestGameState.arenaRadius || 300;
-    fill(100); 
+    const arenaRadius = latestGameState.currentArenaRadius || 300;
+    fill(100);
     noStroke();
     ellipse(0, 0, arenaRadius * 2);
 
-    latestGameState.players.forEach(player => {
-        if (player.isAlive) {
+    Object.values(latestGameState.players).forEach(player => {
+        if (!player.isEliminated) {
             drawPlayer(player);
         }
     });
     pop();
-    
-    if (latestGameEvent) {
-        if (latestGameEvent.type === 'COUNTDOWN' || latestGameEvent.type === 'ROUND_WINNER') {
-            drawStatusText(latestGameEvent.message);
-        }
+
+    if (latestGameEvent && latestGameEvent.type === 'ROUND_WINNER') {
+        drawStatusText(latestGameEvent.message);
     }
 }
 
-/**
- * Draws a single player object received from the server.
- * @param {object} player - The player data from the server.
- */
-
 function drawPlayer(player) {
-    // Draw the sponge (circle)
-    fill(player.color || '#fff');
+    const { x, y, mass, nickname, sessionId, angle, color } = player;
+    
+    fill(color || '#fff');
     noStroke();
-    ellipse(player.position.x, player.position.y, player.mass * 2);
+    ellipse(x, y, mass * 2);
 
     fill(255);
     textAlign(CENTER, BOTTOM);
     textSize(14);
-    text(player.nickname, player.position.x, player.position.y - player.mass - 5);
+    text(nickname, x, y - mass - 5);
 
-    if (player.sessionId === mySessionId) {
+    if (sessionId === mySessionId) {
         push();
-        translate(player.position.x, player.position.y);
-        rotate(player.angle);
+        translate(x, y);
+        rotate(angle);
         stroke(255);
         strokeWeight(3);
-        line(0, 0, player.mass + 20, 0); // Pointer length grows with mass
+        line(0, 0, mass + 20, 0);
         pop();
     }
 }
 
-/**
- * Draws large text in the center of the screen for status updates.
- * @param {string} textToShow - The message to display.
- */
 function drawStatusText(textToShow) {
     push();
     textAlign(CENTER, CENTER);
@@ -99,66 +106,65 @@ function drawStatusText(textToShow) {
     pop();
 }
 
-// --- Player Input ---
-
 function keyPressed() {
-    if (key === ' ' && client && client.active) {
+    if (key === ' ' && client && client.active && gameId) {
+        console.log(`Sending 'expel' action for game ${gameId}`);
+        
+        // this is for MessageMapping("/game/{gameId}/action") part
+        /*
         client.publish({
-            destination: '/app/game.action',
-            body: JSON.stringify({ action: 'expel' })
+            destination: `/app/game/${gameId}/action`,
+            body: JSON.stringify({ action: 'EXPEL' }) // Match the Java Enum
         });
+        */
     }
 }
 
-// --- Networking Logic ---
-
-/**
- * Initializes the StompJs client and connects to the server.
- * @param {string} nickname - The player's chosen nickname.
- */
 function initNetworking(nickname) {
     client = new StompJs.Client({
-        brokerURL: 'ws://localhost:8080/ws',
+        brokerURL: 'ws://localhost:8080/ws', 
         reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
         debug: msg => console.log('[STOMP]', msg),
-
         onConnect: (frame) => {
             console.log('STOMP client connected.');
+            isJoining = false;
             mySessionId = frame.headers['user-name'];
             console.log('My session ID is:', mySessionId);
 
-            // --- Subscribe to Server Topics ---
-            // 1. Subscribe to the main game state topic
-            // This provides continuous updates of all player positions, etc.
-            client.subscribe('/topic/game.state/main', (message) => {
-                latestGameState = JSON.parse(message.body);
-            });
+            client.subscribe('/user/queue/private', onPrivateMessage);
 
-            // 2. Subscribe to the game events topic
-            // This provides notifications for specific events like countdowns or wins.
-            client.subscribe('/topic/game.events/main', (message) => {
-                latestGameEvent = JSON.parse(message.body);
-                console.log("Game Event:", latestGameEvent);
-            });
-            
-            // --- Join the Game ---
-            // After connecting and subscribing, tell the server we want to join.
             client.publish({
-                destination: '/app/game.action',
-                body: JSON.stringify({ action: 'join', nickname: nickname })
+                destination: '/app/game.find',
+                body: JSON.stringify({ nickname: nickname }) 
             });
-
-            latestGameEvent = { type: 'INFO', message: 'Waiting for game to start...' };
         },
-
         onStompError: (frame) => {
             console.error('Broker reported error: ' + frame.headers['message']);
-            console.error('Additional details: ' + frame.body);
-            latestGameEvent = { type: 'ERROR', message: 'Connection Error' };
+            isJoining = false;
         }
     });
-
     client.activate();
+}
+
+/**
+ * Handles messages received on the private user queue.
+ * The most important message is the one containing our gameId.
+ * @param {object} message - The STOMP message object.
+ */
+function onPrivateMessage(message) {
+    const data = JSON.parse(message.body);
+    console.log('[PRIVATE MSG]', data);
+
+    if (data.gameId) {
+        gameId = data.gameId;
+        console.log(`Joined game! Game ID: ${gameId}`);
+
+        client.subscribe(`/topic/game.state/${gameId}`, (message) => {
+            latestGameState = JSON.parse(message.body);
+        });
+
+        client.subscribe(`/topic/game.events/${gameId}`, (message) => {
+            latestGameEvent = JSON.parse(message.body);
+        });
+    }
 }
