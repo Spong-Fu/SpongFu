@@ -15,15 +15,10 @@ app:
 # Add logging configuration for WebSocket/STOMP debugging
 logging:
   level:
-    # Enable STOMP protocol debug logs
-    org.springframework.messaging: DEBUG
-    # Enable WebSocket connection debug logs
-    org.springframework.web.socket: DEBUG
-    # Enable message broker logs
-    org.springframework.messaging.simp: DEBUG
-    # Enable STOMP message handling logs
-    org.springframework.messaging.simp.stomp: DEBUG
-    # Enable WebSocket transport logs
-    org.springframework.web.socket.messaging: DEBUG
-    # Enable session management logs
-    org.springframework.messaging.simp.user: DEBUG
+    org:
+      springframework:
+        messaging: DEBUG
+        messaging.simp: TRACE
+        web:
+          socket: DEBUG
+          socket.messaging: TRACE
