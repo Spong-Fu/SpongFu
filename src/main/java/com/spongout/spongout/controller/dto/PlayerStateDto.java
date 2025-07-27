@@ -4,7 +4,7 @@ public record PlayerStateDto(
         String nickname,
         double x,
         double y,
-        double mass,
+        double size,
         double angle
 ) {
 }
