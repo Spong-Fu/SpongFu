@@ -3,17 +3,12 @@ package com.spongout.spongout.service;
 import com.spongout.spongout.config.GameConstants;
 import com.spongout.spongout.model.GameInstance;
 import com.spongout.spongout.model.Player;
-import com.spongout.spongout.repository.GameRepository;
-import com.spongout.spongout.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -22,7 +17,6 @@ public class GameEngine {
 
     private final GameConstants gameConstants;
 
-    private final PlayerRepository playerRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
@@ -177,28 +171,4 @@ public class GameEngine {
 
         log.info("Player {} expelled with power {}!", player.getNickname(), launchSpeed);
     }
-
-    /**
-     * A public method that the GameController will call to register a player's action.
-     * @param sessionId The ID of the player who wants to perform the action.
-     */
-    public void requestExpelAction(String sessionId) {
-        Optional<Player> playerOpt = playerRepository.findById(sessionId);
-
-        if (playerOpt.isEmpty()) {
-            log.warn("Player {} isn't visible in playerRepository");
-            return;
-        }
-
-        Player player = playerOpt.get();
-
-        if (player != null && !player.isEliminated()) {
-            // This flag will be picked up by the `update()` method on the next tick.
-            player.setGoingToExpel(true);
-        }
-    }
-    private final GameRepository gameRepository;
-
-    private final Map<UUID, UUID> playerToGameMap = new ConcurrentHashMap<>();
-
 }

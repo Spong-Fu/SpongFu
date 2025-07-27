@@ -8,6 +8,7 @@ import com.spongout.spongout.model.GameEventType;
 import com.spongout.spongout.model.GameInstance;
 import com.spongout.spongout.model.Player;
 import com.spongout.spongout.repository.GameRepository;
+import com.spongout.spongout.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -29,6 +30,7 @@ public class GameExecutionService {
     private final SimpMessagingTemplate messagingTemplate;
     private final TaskScheduler taskScheduler;
     private final GameRepository gameRepository;
+    private final PlayerRepository playerRepository;
     private final GameEngine gameEngine;
 
     /**
@@ -37,6 +39,26 @@ public class GameExecutionService {
      */
     private final Map<UUID, ScheduledFuture<?>> activeGameLoops = new ConcurrentHashMap<>();
     private final GameConstants gameConstants;
+
+    /**
+     * A public method that the GameController will call to register a player's action.
+     * @param sessionId The ID of the player who wants to perform the action.
+     */
+    public void requestExpelAction(String sessionId) {
+        Optional<Player> playerOpt = playerRepository.findById(sessionId);
+
+        if (playerOpt.isEmpty()) {
+            log.warn("Player {} isn't visible in playerRepository");
+            return;
+        }
+
+        Player player = playerOpt.get();
+
+        if (player != null && !player.isEliminated()) {
+            // This flag will be picked up by the `update()` method on the next tick.
+            player.setGoingToExpel(true);
+        }
+    }
 
     public void startRound(UUID gameId) {
         // TODO: Implement this method.
