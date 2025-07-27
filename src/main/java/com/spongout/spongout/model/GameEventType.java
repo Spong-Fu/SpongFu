@@ -16,5 +16,9 @@ public enum GameEventType {
     /** The game round has finished and there is a winner. */
     ROUND_WINNER,
     /** The game is ready to begin (all players assigned). */
-    GAME_READY
+    GAME_READY,
+    /** Player got eliminated */
+    PLAYER_ELIMINATED,
+    /** SUDDEN DEATH Started! */
+    SUDDEN_DEATH
 }

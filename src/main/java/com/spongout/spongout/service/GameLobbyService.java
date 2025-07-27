@@ -1,6 +1,7 @@
 package com.spongout.spongout.service;
 
 import com.spongout.spongout.config.GameConstants;
+import com.spongout.spongout.config.WebSocketConstants;
 import com.spongout.spongout.controller.dto.GameStartDto;
 import com.spongout.spongout.model.GameInstance;
 import com.spongout.spongout.model.Player;
@@ -23,8 +24,6 @@ import java.util.concurrent.ScheduledFuture;
 @Service
 @RequiredArgsConstructor
 public class GameLobbyService {
-
-    private static final String USER_PRIVATE_QUEUE = "/queue/private-user";
 
     // --- DEPENDENCY INJECTIONS XD (I know You love it) ---
     private final PlayerRepository playerRepository;
@@ -100,7 +99,8 @@ public class GameLobbyService {
             }
             log.info("Player {} disconnecting from game {}", sessionId, gameId);
             gameRepository.findById(gameId).ifPresent(game -> {
-                game.getPlayers().remove(sessionId);
+                Player removedPlayer = game.getPlayers().remove(sessionId);
+                game.getAlivePlayers().remove(removedPlayer);
                 log.info("Player {} successfully removed from Game {}", sessionId, gameId);
                 // Here you could add logic to end the game if they were the last player
             });
@@ -153,6 +153,8 @@ public class GameLobbyService {
             newGame.getPlayers().put(player.getSessionId(), player);
             playerSessionToGameIdMap.put(player.getSessionId(), gameId);
         }
+        newGame.getAlivePlayers().addAll(players);
+
         log.info("Saving game {} to repository", gameId);
         gameRepository.save(newGame);
 
@@ -161,7 +163,7 @@ public class GameLobbyService {
 
         for (Player player : players) {
             log.info("Sending game start notification to player {} (sessionId: {})", player.getNickname(), player.getSessionId());
-            messagingTemplate.convertAndSend(USER_PRIVATE_QUEUE + player.getSessionId(), gameStartPayload);
+            messagingTemplate.convertAndSend(WebSocketConstants.USER_PRIVATE_QUEUE + player.getSessionId(), gameStartPayload);
         }
         executionService.startRound(gameId);
     }

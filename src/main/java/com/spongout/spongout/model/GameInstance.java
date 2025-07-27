@@ -4,9 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
@@ -16,7 +18,8 @@ public class GameInstance {
 
     private UUID gameId;
     private GameState currentState;
-    private final Map<String, Player> players = new ConcurrentHashMap<>();
+    private final Map<String, Player> players = new ConcurrentHashMap<>(); //now i see that it would be soo easier to have them in list.
+    private final List<Player> alivePlayers = new CopyOnWriteArrayList<>();
     private double currentArenaRadius;
     private long roundStartTime;
     private long lastTickTime; // Used to calculate deltaTime for physics

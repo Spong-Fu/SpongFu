@@ -15,6 +15,7 @@ public class Player implements Principal {
 
     private int score; //for future usage
     private boolean isEliminated;
+    private boolean inMove;
 
     //Physics
     private double x, y;
@@ -54,6 +55,10 @@ public class Player implements Principal {
 
     public void changeAngle(double value) {
         this.angle += value;
+    }
+
+    public void addWin(int playersCount) {
+        this.score = playersCount * 100;
     }
 }
 

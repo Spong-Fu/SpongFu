@@ -1,6 +1,7 @@
 package com.spongout.spongout.service;
 
 import com.spongout.spongout.config.GameConstants;
+import com.spongout.spongout.config.WebSocketConstants;
 import com.spongout.spongout.controller.dto.GameStateDto;
 import com.spongout.spongout.controller.dto.PlayerStateDto;
 import com.spongout.spongout.controller.dto.GameEventDto;
@@ -117,6 +118,7 @@ public class GameExecutionService {
         // Create a list of DTOs for each player
         List<PlayerStateDto> playerDTOs = game.getPlayers().values().stream()
                 .map(player -> new PlayerStateDto(
+                        player.isEliminated(),
                         player.getNickname(),
                         player.getX(),
                         player.getY(),
@@ -131,7 +133,7 @@ public class GameExecutionService {
         );
 
         // 4. Broadcast the complete world state to all players in this game.
-        String stateDestination = String.format("/topic/game.state/%s", gameId);
+        String stateDestination = WebSocketConstants.GAME_STATE_TOPIC + gameId;
         log.trace("Broadcasting game state to: {}", stateDestination);
         messagingTemplate.convertAndSend(stateDestination, gameStateDto);
 
@@ -152,7 +154,7 @@ public class GameExecutionService {
                     .orElse("Nobody"); // Or handle a draw scenario
 
             // Broadcast a final "ROUND_WINNER" event to a different topic.
-            String eventDestination = String.format("/topic/game.events/%s", gameId);
+            String eventDestination = String.format(WebSocketConstants.GAME_EVENTS_TOPIC, gameId);
             messagingTemplate.convertAndSend(eventDestination, new GameEventDto(GameEventType.ROUND_WINNER, winnerNickname));
         }
         log.trace("tick() end for game: {}", gameId);

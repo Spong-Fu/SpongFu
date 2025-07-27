@@ -1,14 +1,18 @@
 package com.spongout.spongout.service;
 
 import com.spongout.spongout.config.GameConstants;
+import com.spongout.spongout.config.WebSocketConstants;
+import com.spongout.spongout.controller.dto.GameEventDto;
+import com.spongout.spongout.model.GameEventType;
 import com.spongout.spongout.model.GameInstance;
 import com.spongout.spongout.model.Player;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -16,21 +20,22 @@ import java.util.Map;
 public class GameEngine {
 
     private final GameConstants gameConstants;
-
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
      * Advances the game state by one frame. This is the core game loop logic.
      */
     public void update(GameInstance game) {
-        Map<String, Player> players = game.getPlayers();
+        MDC.put("GAME", game.getGameId().toString());
 
-        // --- 1. Calculate Delta Time ---
+        // Calculate Delta Time
         long now = System.currentTimeMillis();
         double deltaTime = (now - game.getLastTickTime()) / 1000.0;
         game.setLastTickTime(now);
 
         long currentGameTime = now - game.getRoundStartTime();
+
+        List<Player> players = game.getAlivePlayers();
 
         updatePlayers(players, deltaTime);
 
@@ -38,15 +43,15 @@ public class GameEngine {
         collidePlayers(game, players);
 
         //Game State Updates
-        updateGameState(game, players, deltaTime, currentGameTime);
+        updateGameState(game, deltaTime, currentGameTime);
     }
 
-    private void updatePlayers(Map<String, Player> players, double deltaTime) {
+    private void updatePlayers(List<Player> players, double deltaTime) {
         //single player updates logic
         //changing size (growing)
         //changing angle for expel
         //expelling players if action key pressed
-        players.values().parallelStream().forEach(player -> {
+        for (Player player : players) {
             player.changeSize(gameConstants.getPlayerGrowthRate() * deltaTime);
             player.changeAngle(gameConstants.getPlayerSpinRateRad() * deltaTime);
 
@@ -56,7 +61,7 @@ public class GameEngine {
             if (player.isGoingToExpel()) {
                 launchPlayer(player);
             }
-        });
+        }
     }
 
     private void movePlayer(Player player, double deltaTime) {
@@ -106,18 +111,19 @@ public class GameEngine {
         log.info("Player {} expelled with power {}!", player.getNickname(), launchSpeed);
     }
 
-    private void collidePlayers(GameInstance game, Map<String, Player> players) {
-        players.values().parallelStream().forEach(player -> {
+    private void collidePlayers(GameInstance game, List<Player> players) {
+
+        for (Player player : players) {
 
             // Wall collision check (circular arena) - using squared distance
             double distanceSquaredFromCenter = player.getX() * player.getX() + player.getY() * player.getY();
             double arenaRadiusMinusPlayerSize = game.getCurrentArenaRadius() - player.getSize();
             if (distanceSquaredFromCenter > arenaRadiusMinusPlayerSize * arenaRadiusMinusPlayerSize) {
-                player.setEliminated(true);
+                eliminatePlayer(game, player);
             }
 
             // Player-vs-Player collision
-            for (Player player2 : players.values()) {
+            for (Player player2 : players) {
                 if (player.getSessionId().equals(player2.getSessionId())) {
                     continue; // Skip same player
                 }
@@ -137,7 +143,7 @@ public class GameEngine {
                     handlePlayerCollision(player, player2, dx, dy, distance);
                 }
             }
-        });
+        }
     }
 
     private void handlePlayerCollision(Player p1, Player p2, double dx, double dy, double distance) {
@@ -174,26 +180,28 @@ public class GameEngine {
         p2.setY(p2.getY() + separationDistance * ny);
     }
 
-    private void updateGameState(GameInstance game, Map<String, Player> players, double deltaTime, long currentGameTime) {
-        for(Player player : players.values()) {
-            if (player.isEliminated()) {
-                game.getPlayers().remove(player.getSessionId());
-                //TODO: send payload to events topic
-            }
-        }
-
+    private void updateGameState(GameInstance game, double deltaTime, long currentGameTime) {
+        //check if SUDDEN_DEATH ON
         if (game.getCurrentState().equals(GameInstance.GameState.SUDDEN_DEATH)) {
             var arenaRadius = game.getCurrentArenaRadius() - (gameConstants.getArenaShrinkRate() * deltaTime);
             game.setCurrentArenaRadius(arenaRadius);
-        } else if (
-                        game.getCurrentState().equals(GameInstance.GameState.RUNNING) &&
-                        currentGameTime > gameConstants.getSuddenDeathMs()) {
-            game.setCurrentState(GameInstance.GameState.SUDDEN_DEATH);
-        }
 
-        if (players.size() <= 1) {
-            game.setCurrentState(GameInstance.GameState.ROUND_OVER);
-            //TODO: send payload to events topic
+            //CHECK IF SUDDEN_DEATH SHOULD BE ON :}
+        } else if (game.getCurrentState().equals(GameInstance.GameState.RUNNING) && currentGameTime > gameConstants.getSuddenDeathMs()) {
+            game.setCurrentState(GameInstance.GameState.SUDDEN_DEATH);
+            var payload = new GameEventDto(GameEventType.SUDDEN_DEATH);
+            simpMessagingTemplate.convertAndSend(WebSocketConstants.GAME_EVENTS_TOPIC + game.getGameId(), payload);
         }
+        //CHECK IF ROUND_OVER
+        if (game.getAlivePlayers().size() <= 1) {
+            game.setCurrentState(GameInstance.GameState.ROUND_OVER);
+        }
+    }
+
+    private void eliminatePlayer(GameInstance game, Player player) {
+        var payload = new GameEventDto(GameEventType.PLAYER_ELIMINATED, player.getNickname());
+        simpMessagingTemplate.convertAndSend(WebSocketConstants.GAME_EVENTS_TOPIC + game.getGameId(), payload);
+        player.setEliminated(true);
+        game.getAlivePlayers().remove(player);
     }
 }
