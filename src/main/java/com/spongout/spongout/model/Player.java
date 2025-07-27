@@ -40,7 +40,7 @@ public class Player implements Principal {
         this.goingToExpel = false;
         this.velocityX = 0;
         this.velocityY = 0;
-        // Position (x, y) and initial mass should be set by the GameEngine when spawning.
+        // Position (x, y) and initial size should be set by the GameEngine when spawning.
     }
 
     @Override
