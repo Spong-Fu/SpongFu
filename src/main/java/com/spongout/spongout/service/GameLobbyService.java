@@ -5,6 +5,7 @@ import com.spongout.spongout.controller.dto.GameStartDto;
 import com.spongout.spongout.model.GameInstance;
 import com.spongout.spongout.model.Player;
 import com.spongout.spongout.repository.GameRepository;
+import com.spongout.spongout.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,6 +27,7 @@ public class GameLobbyService {
     private static final String USER_PRIVATE_QUEUE = "/queue/private-user";
 
     // --- DEPENDENCY INJECTIONS XD (I know You love it) ---
+    private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
     private final GameExecutionService executionService;
 
@@ -51,6 +53,7 @@ public class GameLobbyService {
             Player newPlayer = new Player(nickname, sessionId);
 
             waitingRoom.add(newPlayer);
+            playerRepository.save(newPlayer);
             int waitingRoomSize = waitingRoom.size();
             log.debug("Current waiting room size: {}", waitingRoomSize);
 
@@ -74,6 +77,10 @@ public class GameLobbyService {
     public void handlePlayerDisconnect(String sessionId) {
         log.info("Handling player disconnect for sessionId: {}", sessionId);
 
+        //delete from PlayerRepo
+        playerRepository.deleteById(sessionId);
+
+        //delete from the game
         boolean removedFromWaitingRoom = waitingRoom.removeIf(p -> p.getSessionId().equals(sessionId));
 
         if (removedFromWaitingRoom) {

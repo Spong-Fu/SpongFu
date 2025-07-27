@@ -23,4 +23,5 @@ public class GameConstants {
     private double frictionFactor; // Multiplier per frame
     private long suddenDeathMs; // Time in ms before sudden death starts
     private double arenaShrinkRate; // Radius units per second
+    private double launchPowerMultiplier;
 }

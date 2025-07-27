@@ -18,6 +18,7 @@ app:
       friction-factor: 0.98 # Multiplier per frame
       sudden-death-ms: 30000 # 30 seconds
       arena-shrink-rate: 10.0 # Radius units per second
+      launch-power-multiplier: 15.0
 
 # Add logging configuration for WebSocket/STOMP debugging
 logging:

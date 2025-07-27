@@ -40,6 +40,7 @@ public class GameInstance {
         //rest should be set by gameEngine when round starts
     }
 
+    //TODO move it to `GameEngine`
     public void spawnPlayers(double playerInitialMass) {
         // We'll spawn players in the inner 80% of the arena to give them some space.
         final double spawnRadius = this.currentArenaRadius * 0.8;

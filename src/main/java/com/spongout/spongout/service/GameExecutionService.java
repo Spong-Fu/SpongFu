@@ -29,6 +29,7 @@ public class GameExecutionService {
     private final SimpMessagingTemplate messagingTemplate;
     private final TaskScheduler taskScheduler;
     private final GameRepository gameRepository;
+    private final GameEngine gameEngine;
 
     /**
      * Stores the running tasks for each game, so they can be stopped later.
@@ -89,7 +90,7 @@ public class GameExecutionService {
         log.trace("Game instance found: {}, state: {}", gameId, game.getCurrentState());
 
         // 2. Delegate all physics and game logic calculations to the game instance.
-        //game.update();
+        gameEngine.update(game);
 
         // Create a list of DTOs for each player
         List<PlayerStateDto> playerDTOs = game.getPlayers().values().stream()
