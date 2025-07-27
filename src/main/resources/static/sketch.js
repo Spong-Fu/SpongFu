@@ -50,8 +50,8 @@ const drawBackground = () => {
 const createArenaScaler = () => {
 	let maxRadius;
 
-	const getScaledArenaRadius = () => {
-		const currentRadius = latestGameState.arenaRadius;
+	const getScaledArenaRadius = (arenaRadius) => {
+		const currentRadius = arenaRadius;
 		if (!maxRadius) {
 			maxRadius = currentRadius;
 		}
@@ -83,8 +83,16 @@ var myNickname = null;
 
 var latestGameState = null;
 var latestGameEvent = null;
+let spongeImg;
+let googleyEyes;
 
 // --- p5.js Sketch ---
+
+function preload() {
+	spongeImg = loadImage("./assets/sponge-svgrepo-com.svg");
+	googleyEyes = loadImage("./assets/googley-eyes-1.svg");
+}
+
 
 function setup() {
     // Create a larger square canvas to accommodate the circular arena
@@ -129,15 +137,14 @@ function draw() {
         // Draw circular arena using the radius from the server
         let centerX = width / 2;
         let centerY = height / 2;
-        //let arenaRadius = latestGameState.arenaRadius;
-				const arenaRadius = scaledArenaRadius();
-				console.log(`CURRENT ARENA RADIUS: ${arenaRadius}`);
+        let arenaRadius = latestGameState.arenaRadius;
+				const scaledRadius = scaledArenaRadius(arenaRadius);
 
         // Draw arena boundary circle
         noFill();
         stroke(200);
         strokeWeight(2);
-        ellipse(centerX, centerY, arenaRadius * 2);
+        ellipse(centerX, centerY, scaledRadius * 2);
 
 				/*
         // Optional: Add a subtle fill to show the playable area
@@ -182,9 +189,20 @@ function drawPlayer(playerDto) {
     const screenX = x + width / 2;
     const screenY = y + height / 2;
 
+		/*
     fill('#FFC0CB');
     noStroke();
+		
     ellipse(screenX, screenY, size * 2);
+		*/
+		push();
+		imageMode(CENTER);
+		const spongeSize = size * 2 
+		const eyeSize = spongeSize * .6;
+
+		image(spongeImg, screenX, screenY, spongeSize, spongeSize );
+		image(googleyEyes, screenX, screenY - size*.1, eyeSize, eyeSize);
+		pop();
 
     fill(255);
     textAlign(CENTER, BOTTOM);
