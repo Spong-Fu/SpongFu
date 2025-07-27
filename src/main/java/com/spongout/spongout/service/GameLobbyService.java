@@ -77,6 +77,7 @@ public class GameLobbyService {
                 log.info("Player {} successfully removed from Game {}", sessionId, gameId);
                 // Here you could add logic to end the game if they were the last player
             });
+            //TODO add PLAYER_LEFT_GAME
         }
     }
 
