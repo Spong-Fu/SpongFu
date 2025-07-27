@@ -1,17 +1,23 @@
+// --- Networking & State Management ---
 var client;
-var mySessionId = null; 
-var gameId = null; 
+// We no longer need mySessionId, as we will use myNickname to identify our player.
+var gameId = null;
 var isJoining = false;
+var myNickname = null;
 
 var latestGameState = null;
 var latestGameEvent = null;
 
-const arena = { w: 1200, h: 700 };
+// --- p5.js Sketch ---
+const arena = { w: 800, h: 400 };
+const platform = { x: 100, y: 300, w: 600, h: 90 };
 
 function setup() {
     let canvas = createCanvas(arena.w, arena.h);
     canvas.parent("game-container");
-    
+}
+
+function initializeLobby() {
     const joinButton = document.getElementById('join-button');
     const nicknameInput = document.getElementById('nickname');
     const lobby = document.getElementById('lobby');
@@ -21,6 +27,7 @@ function setup() {
         joinButton.onclick = () => {
             const nickname = nicknameInput.value.trim();
             if (nickname) {
+                myNickname = nickname; // Store the nickname
                 isJoining = true;
                 lobby.style.display = 'none';
                 gameContainer.style.display = 'block';
@@ -30,20 +37,34 @@ function setup() {
             }
         };
     } else {
-        console.error("Lobby elements not found! Ensure HTML is correct.");
+        console.error("Lobby elements could not be found.");
     }
 }
+
+window.addEventListener('DOMContentLoaded', initializeLobby);
+
 
 function draw() {
     background(34);
 
+    // translate(width / 2, height / 2);
+
+    if (!isJoining && gameId) {
+        fill('gray');
+        stroke(200);
+        rect(platform.x, platform.y, platform.w, platform.h);
+        noFill();
+        stroke(200);
+        rect(0, 0, width - 1, height - 1);
+    }
+    
     let status = '';
     if (isJoining) {
         status = 'Connecting...';
     } else if (!gameId) {
-        status = 'In lobby, waiting for game to start...';
+        status = 'In lobby, waiting for other players...';
     } else if (!latestGameState) {
-        status = `Game ${gameId} starting... Waiting for state.`;
+        status = `Game found! Waiting for round to start...`;
     }
 
     if (status) {
@@ -51,72 +72,61 @@ function draw() {
         return;
     }
 
-    // --- Draw the Game World ---
-    push();
-    translate(width / 2, height / 2);
-
-    const arenaRadius = latestGameState.currentArenaRadius || 300;
-    fill(100);
-    noStroke();
-    ellipse(0, 0, arenaRadius * 2);
-
-    Object.values(latestGameState.players).forEach(player => {
-        if (!player.isEliminated) {
-            drawPlayer(player);
-        }
-    });
-    pop();
+    if (latestGameState && latestGameState.players) {
+        console.log("Drawing players:", latestGameState.players); 
+        latestGameState.players.forEach(playerDto => {
+            drawPlayer(playerDto);
+        });
+    }
 
     if (latestGameEvent && latestGameEvent.type === 'ROUND_WINNER') {
         drawStatusText(latestGameEvent.message);
     }
 }
 
-function drawPlayer(player) {
-    const { x, y, mass, nickname, sessionId, angle, color } = player;
-    
-    fill(color || '#fff');
-    noStroke();
-    ellipse(x, y, mass * 2);
+// This function draws a single player based on the PlayerStateDto from the server.
+function drawPlayer(playerDto) {
+    console.log("Attempting to draw player:", playerDto);
 
+    const { x, y, size, nickname, angle } = playerDto;
+
+    // const screenX = x + width / 2;
+    // const screenY = y + height / 2;
+    
+    // push();
+    fill('#FFC0CB'); 
+    noStroke();
+    ellipse(x, y, size * 2);
     fill(255);
     textAlign(CENTER, BOTTOM);
     textSize(14);
-    text(nickname, x, y - mass - 5);
+    text(nickname, x, y - size - 5);
 
-    if (sessionId === mySessionId) {
+    if (nickname === myNickname) {
         push();
         translate(x, y);
         rotate(angle);
         stroke(255);
         strokeWeight(3);
-        line(0, 0, mass + 20, 0);
+        line(0, 0, size + 20, 0); 
         pop();
     }
+    // pop();
 }
 
 function drawStatusText(textToShow) {
     push();
     textAlign(CENTER, CENTER);
-    textSize(64);
+    textSize(32);
     fill("white");
-    stroke(0);
-    strokeWeight(4);
+    noStroke();
     text(textToShow, width / 2, height / 2);
     pop();
 }
 
 function keyPressed() {
     if (key === ' ' && client && client.active && gameId) {
-        console.log(`Sending 'expel' action for game ${gameId}`);
-        
-        // this is for MessageMapping("/game/{gameId}/action") part
-        /*
-        client.publish({
-            destination: `/app/game/${gameId}/action`,
-            body: JSON.stringify({ action: 'EXPEL' }) // Match the Java Enum
-        });
-        */
+        // Action logic will be uncommented when the backend action endpoint is ready.
     }
 }
 
@@ -126,16 +136,11 @@ function initNetworking(nickname) {
         reconnectDelay: 5000,
         debug: msg => console.log('[STOMP]', msg),
         onConnect: (frame) => {
-            console.log('STOMP client connected.');
             isJoining = false;
-            mySessionId = frame.headers['user-name'];
-            console.log('My session ID is:', mySessionId);
-
             client.subscribe('/user/queue/private', onPrivateMessage);
-
             client.publish({
                 destination: '/app/game.find',
-                body: JSON.stringify({ nickname: nickname }) 
+                body: JSON.stringify({ nickname: nickname })
             });
         },
         onStompError: (frame) => {
@@ -146,15 +151,8 @@ function initNetworking(nickname) {
     client.activate();
 }
 
-/**
- * Handles messages received on the private user queue.
- * The most important message is the one containing our gameId.
- * @param {object} message - The STOMP message object.
- */
 function onPrivateMessage(message) {
     const data = JSON.parse(message.body);
-    console.log('[PRIVATE MSG]', data);
-
     if (data.gameId) {
         gameId = data.gameId;
         console.log(`Joined game! Game ID: ${gameId}`);
