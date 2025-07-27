@@ -157,7 +157,7 @@ public class GameExecutionService {
             winner.addWin(game.getPlayers().size());
 
             // Broadcast a final "ROUND_WINNER" event to a different topic.
-            String eventDestination = String.format(WebSocketConstants.GAME_EVENTS_TOPIC, gameId);
+            String eventDestination = WebSocketConstants.GAME_EVENTS_TOPIC + gameId;
             messagingTemplate.convertAndSend(eventDestination, new GameEventDto(GameEventType.ROUND_WINNER, winner.getNickname()));
             log.info("{} WON!", winner.getNickname());
 
