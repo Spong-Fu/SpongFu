@@ -1,3 +1,8 @@
+// Configuration
+const config = {
+    BROKER_URL: 'ws://localhost:8080/ws'
+};
+
 //Rendering Functions
 const drawTriangleChunk = (x, y, size) => {
 	beginShape();
@@ -192,12 +197,12 @@ function drawPlayer(playerDto) {
 		/*
     fill('#FFC0CB');
     noStroke();
-		
+
     ellipse(screenX, screenY, size * 2);
 		*/
 		push();
 		imageMode(CENTER);
-		const spongeSize = size * 2 
+		const spongeSize = size * 2
 		const eyeSize = spongeSize * .6;
 
 		image(spongeImg, screenX, screenY, spongeSize, spongeSize );
@@ -241,7 +246,7 @@ function keyPressed() {
 
 function initNetworking(nickname) {
     client = new StompJs.Client({
-        brokerURL: 'ws://localhost:8080/ws', 
+        brokerURL: config.BROKER_URL,
         reconnectDelay: 5000,
         debug: msg => console.log('[STOMP]', msg),
         onConnect: (frame) => {
