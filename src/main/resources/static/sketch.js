@@ -47,6 +47,24 @@ const drawBackground = () => {
 	pop();
 }
 
+const createArenaScaler = () => {
+	let maxRadius;
+
+	const getScaledArenaRadius = () => {
+		const currentRadius = latestGameState.arenaRadius;
+		if (!maxRadius) {
+			maxRadius = currentRadius;
+		}
+
+		const scale = (Math.min(width / 2, height /2)) / maxRadius;
+
+		return currentRadius * scale;
+	}
+
+	return getScaledArenaRadius;
+}
+
+
 
 //canvas takes up 80% of screen and sets height to desired aspect ratio.
 const dynamicSizedArena = (aspectRatioWidth, aspectRatioHeight) => {
@@ -102,14 +120,18 @@ function initializeLobby() {
 
 window.addEventListener('DOMContentLoaded', initializeLobby);
 
+const scaledArenaRadius = createArenaScaler();
+
 function draw() {
-    background(34);
+		drawBackground();
 
     if (!isJoining && gameId && latestGameState) {
         // Draw circular arena using the radius from the server
         let centerX = width / 2;
         let centerY = height / 2;
-        let arenaRadius = latestGameState.arenaRadius;
+        //let arenaRadius = latestGameState.arenaRadius;
+				const arenaRadius = scaledArenaRadius();
+				console.log(`CURRENT ARENA RADIUS: ${arenaRadius}`);
 
         // Draw arena boundary circle
         noFill();
@@ -117,9 +139,11 @@ function draw() {
         strokeWeight(2);
         ellipse(centerX, centerY, arenaRadius * 2);
 
+				/*
         // Optional: Add a subtle fill to show the playable area
         fill(50, 50, 50, 50); // Dark gray with transparency
         ellipse(centerX, centerY, arenaRadius * 2);
+				*/
     }
 
     let status = '';
