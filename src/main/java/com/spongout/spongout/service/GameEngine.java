@@ -26,7 +26,7 @@ public class GameEngine {
      * Advances the game state by one frame. This is the core game loop logic.
      */
     public void update(GameInstance game) {
-        MDC.put("GAME", game.getGameId().toString());
+        MDC.put("GAME", String.valueOf(game.getGameId().hashCode()));
 
         // Calculate Delta Time
         long now = System.currentTimeMillis();

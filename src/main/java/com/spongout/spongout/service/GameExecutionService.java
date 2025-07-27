@@ -12,6 +12,7 @@ import com.spongout.spongout.repository.GameRepository;
 import com.spongout.spongout.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -94,6 +95,7 @@ public class GameExecutionService {
      * @param gameId The ID of the game to update.
      */
     private void tick(UUID gameId) {
+        MDC.put("GAME", String.valueOf(gameId.hashCode()));
         log.trace("tick() start for game: {}", gameId);
         // 1. Find the game instance. This is the most critical step.
         var optionalGame = gameRepository.findById(gameId);
@@ -148,14 +150,15 @@ public class GameExecutionService {
             }
 
             // Find the winner (should be the only player left).
-            String winnerNickname = game.getPlayers().values().stream()
-                    .map(Player::getNickname)
-                    .findFirst()
-                    .orElse("Nobody"); // Or handle a draw scenario
+            if (game.getAlivePlayers().size() > 1) {
+                log.error("Error! Game finished with more that 1 player alive!");
+            }
+            Player winner = game.getAlivePlayers().getFirst();
 
             // Broadcast a final "ROUND_WINNER" event to a different topic.
             String eventDestination = String.format(WebSocketConstants.GAME_EVENTS_TOPIC, gameId);
-            messagingTemplate.convertAndSend(eventDestination, new GameEventDto(GameEventType.ROUND_WINNER, winnerNickname));
+            messagingTemplate.convertAndSend(eventDestination, new GameEventDto(GameEventType.ROUND_WINNER, winner.getNickname()));
+            log.info("{} WON!", winner.getNickname());
         }
         log.trace("tick() end for game: {}", gameId);
     }

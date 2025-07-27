@@ -15,7 +15,7 @@ app:
 
       player-growth-rate: 3.0 # Mass per second
       player-spin-rate-rad: 6 # Math.PI * 2 (Radians per second, 1 full rotation)
-      friction-factor: 0.98 # Multiplier per frame
+      friction-factor: 0.6 # Multiplier per frame
       sudden-death-ms: 5000 # 30 seconds
       arena-shrink-rate: 10.0 # Radius units per second
       launch-power-multiplier: 15
