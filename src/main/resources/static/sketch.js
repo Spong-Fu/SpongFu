@@ -13,7 +13,10 @@ const arena = { w: 800, h: 400 };
 const platform = { x: 100, y: 300, w: 600, h: 90 };
 
 function setup() {
-    let canvas = createCanvas(arena.w, arena.h);
+    // Create a larger square canvas to accommodate the circular arena
+    // The initial arena radius is 500, so we need at least 1000x1000 canvas
+    let canvasSize = 1200; // Give some extra space for UI elements
+    let canvas = createCanvas(canvasSize, canvasSize);
     canvas.parent("game-container");
 }
 
@@ -43,21 +46,26 @@ function initializeLobby() {
 
 window.addEventListener('DOMContentLoaded', initializeLobby);
 
-
 function draw() {
     background(34);
 
-    // translate(width / 2, height / 2);
+    if (!isJoining && gameId && latestGameState) {
+        // Draw circular arena using the radius from the server
+        let centerX = width / 2;
+        let centerY = height / 2;
+        let arenaRadius = latestGameState.arenaRadius;
 
-    if (!isJoining && gameId) {
-        fill('gray');
-        stroke(200);
-        rect(platform.x, platform.y, platform.w, platform.h);
+        // Draw arena boundary circle
         noFill();
         stroke(200);
-        rect(0, 0, width - 1, height - 1);
+        strokeWeight(2);
+        ellipse(centerX, centerY, arenaRadius * 2);
+
+        // Optional: Add a subtle fill to show the playable area
+        fill(50, 50, 50, 50); // Dark gray with transparency
+        ellipse(centerX, centerY, arenaRadius * 2);
     }
-    
+
     let status = '';
     if (isJoining) {
         status = 'Connecting...';
@@ -73,7 +81,7 @@ function draw() {
     }
 
     if (latestGameState && latestGameState.players) {
-        console.log("Drawing players:", latestGameState.players); 
+        console.log("Drawing players:", latestGameState.players);
         latestGameState.players.forEach(playerDto => {
             drawPlayer(playerDto);
         });
@@ -84,34 +92,34 @@ function draw() {
     }
 }
 
-// This function draws a single player based on the PlayerStateDto from the server.
+
 function drawPlayer(playerDto) {
     console.log("Attempting to draw player:", playerDto);
 
     const { x, y, size, nickname, angle } = playerDto;
 
-    // const screenX = x + width / 2;
-    // const screenY = y + height / 2;
-    
-    // push();
-    fill('#FFC0CB'); 
+    // Convert from game coordinates (centered at 0,0) to screen coordinates
+    const screenX = x + width / 2;
+    const screenY = y + height / 2;
+
+    fill('#FFC0CB');
     noStroke();
-    ellipse(x, y, size * 2);
+    ellipse(screenX, screenY, size * 2);
+
     fill(255);
     textAlign(CENTER, BOTTOM);
     textSize(14);
-    text(nickname, x, y - size - 5);
+    text(nickname, screenX, screenY - size - 5);
 
     if (nickname === myNickname) {
         push();
-        translate(x, y);
+        translate(screenX, screenY);
         rotate(angle);
         stroke(255);
         strokeWeight(3);
-        line(0, 0, size + 20, 0); 
+        line(0, 0, size + 20, 0);
         pop();
     }
-    // pop();
 }
 
 function drawStatusText(textToShow) {
@@ -126,7 +134,10 @@ function drawStatusText(textToShow) {
 
 function keyPressed() {
     if (key === ' ' && client && client.active && gameId) {
-        // Action logic will be uncommented when the backend action endpoint is ready.
+        client.publish({
+            destination: `/app/game.action/${gameId}`,
+            body: JSON.stringify({ action: 'EXPEL' })
+        });
     }
 }
 
