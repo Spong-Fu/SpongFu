@@ -46,33 +46,6 @@ public class GameLobbyService {
     /** Holds the reference to the scheduled countdown task, so it can be cancelled. */
     private volatile ScheduledFuture<?> countdownTask;
 
-    public void handlePlayerJoin(String nickname, String sessionId) {
-        synchronized (waitingRoomLock) {
-            log.info("Player joining: nickname={}, sessionId={}", nickname, sessionId);
-            Player newPlayer = new Player(nickname, sessionId);
-
-            waitingRoom.add(newPlayer);
-            playerRepository.save(newPlayer);
-            int waitingRoomSize = waitingRoom.size();
-            log.debug("Current waiting room size: {}", waitingRoomSize);
-
-            if (waitingRoomSize >= gameConstants.getMaxPlayersInLobby()) {
-                log.info("LOBBY FULL. LET'S START A GAME!");
-
-                if (countdownTask != null) {
-                    cancelCountdown();
-                }
-
-                formGameFromWaitingRoom();
-            } else if (waitingRoomSize >= gameConstants.getMinPlayersToStart() && countdownTask == null) {
-                log.info("{} PLAYERS WAITING. LET'S START A COUNTDOWN!", waitingRoomSize);
-                startLobbyCountdown();
-            } else {
-                log.info("{} PLAYER/S WAITING...", waitingRoomSize);
-            }
-        }
-    }
-
     public void handlePlayerDisconnect(String sessionId) {
         log.info("Handling player disconnect for sessionId: {}", sessionId);
 
@@ -106,6 +79,45 @@ public class GameLobbyService {
             });
         }
     }
+
+    public void handlePlayerReJoin(Player player) {
+        synchronized (waitingRoomLock) {
+            waitingRoom.add(player);
+            checkWaitingRoom();
+        }
+    }
+    public void handlePlayerJoin(String nickname, String sessionId) {
+        synchronized (waitingRoomLock) {
+            log.info("Player joining: nickname={}, sessionId={}", nickname, sessionId);
+            Player newPlayer = new Player(nickname, sessionId);
+
+            waitingRoom.add(newPlayer);
+            playerRepository.save(newPlayer);
+            checkWaitingRoom();
+        }
+    }
+
+    private void checkWaitingRoom() {
+        int waitingRoomSize = waitingRoom.size();
+        log.debug("Current waiting room size: {}", waitingRoomSize);
+
+        if (waitingRoomSize >= gameConstants.getMaxPlayersInLobby()) {
+            log.info("LOBBY FULL. LET'S START A GAME!");
+
+            if (countdownTask != null) {
+                cancelCountdown();
+            }
+
+            formGameFromWaitingRoom();
+        } else if (waitingRoomSize >= gameConstants.getMinPlayersToStart() && countdownTask == null) {
+            log.info("{} PLAYERS WAITING. LET'S START A COUNTDOWN!", waitingRoomSize);
+            startLobbyCountdown();
+        } else {
+            log.info("{} PLAYER/S WAITING...", waitingRoomSize);
+        }
+    }
+
+
 
     private void startLobbyCountdown() {
         // TODO: Implement this method based on the specification above.

@@ -56,7 +56,7 @@ public class GameExecutionService {
 
         Player player = playerOpt.get();
 
-        if (player != null && !player.isEliminated()) {
+        if (!player.isEliminated()) {
             // This flag will be picked up by the `update()` method on the next tick.
             player.setGoingToExpel(true);
         }
@@ -154,11 +154,19 @@ public class GameExecutionService {
                 log.error("Error! Game finished with more that 1 player alive!");
             }
             Player winner = game.getAlivePlayers().getFirst();
+            winner.addWin(game.getPlayers().size());
 
             // Broadcast a final "ROUND_WINNER" event to a different topic.
             String eventDestination = String.format(WebSocketConstants.GAME_EVENTS_TOPIC, gameId);
             messagingTemplate.convertAndSend(eventDestination, new GameEventDto(GameEventType.ROUND_WINNER, winner.getNickname()));
             log.info("{} WON!", winner.getNickname());
+
+            //Move players to lobby
+//            for (Player player : game.getPlayers().values()) {
+//                // cant use for now - circular dependency
+//                // but will make it work :)
+//               lobbyService.handlePlayerReJoin(player);
+//            }
         }
         log.trace("tick() end for game: {}", gameId);
     }
