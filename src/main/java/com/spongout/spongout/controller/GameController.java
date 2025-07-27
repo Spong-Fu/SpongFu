@@ -31,7 +31,7 @@ public class GameController {
     }
 
     //gameId isnt needed, but leave for now - dont have time for change.
-    @MessageMapping("/game/{gameId}/action")
+    @MessageMapping("/game.action/{gameId}")
     public void handleGameAction(SimpMessageHeaderAccessor header, @DestinationVariable UUID gameId, @Payload ActionRequestDto dto) {
        if (dto.action().equals(Action.EXPEL)) {
            gameExecutionService.requestExpelAction(header.getSessionId());
