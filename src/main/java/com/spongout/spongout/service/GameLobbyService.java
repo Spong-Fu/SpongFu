@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 
-
+//TODO add events for queue too. Like player
 @Slf4j
 @Service
 @RequiredArgsConstructor
