@@ -32,8 +32,20 @@ public class GameEngine {
 
         long currentGameTime = now - game.getRoundStartTime();
 
+        updatePlayers(players, deltaTime);
 
-        //parallel loop for
+        //collision logic
+        collidePlayers(game, players);
+
+        //Game State Updates
+        updateGameState(game, players, deltaTime, currentGameTime);
+    }
+
+    private void updatePlayers(Map<String, Player> players, double deltaTime) {
+        //single player updates logic
+        //changing size (growing)
+        //changing angle for expel
+        //expelling players if action key pressed
         players.values().parallelStream().forEach(player -> {
             player.changeSize(gameConstants.getPlayerGrowthRate() * deltaTime);
             player.changeAngle(gameConstants.getPlayerSpinRateRad() * deltaTime);
@@ -41,15 +53,33 @@ public class GameEngine {
                 launchPlayer(player);
             }
         });
+    }
 
-        // --- 3. Handle Collisions ---
-        // TODO: Implement collision logic.
-        //  a. Player-vs-Wall: Loop through players. If their distance from (0,0) is greater
-        //     than currentArenaRadius, mark them as isEliminated = true.
-        //  b. Player-vs-Player (The Hard Part): Use a nested loop to check every player against
-        //     every other player. If they collide, calculate and apply new velocities using
-        //     2D elastic collision formulas.
+    private void launchPlayer(Player player) {
+        // 1. Calculate the magnitude (speed) of the launch
+        double launchSpeed = player.getSize() * gameConstants.getLaunchPowerMultiplier();
 
+        // 2. Get the player's angle in radians
+        double angle = player.getAngle();
+
+        // 3. Calculate the X and Y components of the launch velocity
+        double launchVelocityX = Math.cos(angle) * launchSpeed;
+        double launchVelocityY = Math.sin(angle) * launchSpeed;
+
+        // 4. Add the launch velocity to the player's current velocity (as an impulse)
+        player.setVelocityX(player.getVelocityX() + launchVelocityX);
+        player.setVelocityY(player.getVelocityY() + launchVelocityY);
+
+        // 5. Reset the player's size to the initial value
+        player.setSize(gameConstants.getPlayerStartingSize());
+
+        // 6. Reset the flag so they don't launch again on the next frame
+        player.setGoingToExpel(false);
+
+        log.info("Player {} expelled with power {}!", player.getNickname(), launchSpeed);
+    }
+
+    private void collidePlayers(GameInstance game, Map<String, Player> players) {
         players.values().parallelStream().forEach(player -> {
 
             // Wall collision check (circular arena) - using squared distance
@@ -75,43 +105,12 @@ public class GameEngine {
                 double minDistanceSquared = minDistance * minDistance;
 
                 if (distanceSquared < minDistanceSquared && distanceSquared > 0) {
-                    // Collision detected - we still need actual distance for physics calculations
+                    // Collision detected
                     double distance = Math.sqrt(distanceSquared);
                     handlePlayerCollision(player, player2, dx, dy, distance);
                 }
             }
         });
-
-        // --- 4. Update Game State & Cleanup ---
-        // TODO:
-        //  a. Remove eliminated players from the `players` map.
-        //  b. If in SUDDEN_DEATH state, shrink the arena:
-        //     currentArenaRadius -= ARENA_SHRINK_RATE * deltaTime;
-        //  c. Check for Sudden Death trigger: If the game state is RUNNING and
-        //     (System.currentTimeMillis() - roundStartTime > SUDDEN_DEATH_MS),
-        //     change the state to SUDDEN_DEATH.
-        //  d. Check for Win Condition: If `players.size() <= 1`, set currentState to ROUND_OVER.
-
-        for(Player player : players.values()) {
-            if (player.isEliminated()) {
-                game.getPlayers().remove(player.getSessionId());
-                //TODO: send payload to events topic
-            }
-        }
-
-        if (game.getCurrentState().equals(GameInstance.GameState.SUDDEN_DEATH)) {
-            var arenaRadius = game.getCurrentArenaRadius() - (gameConstants.getArenaShrinkRate() * deltaTime);
-            game.setCurrentArenaRadius(arenaRadius);
-        } else if (
-                        game.getCurrentState().equals(GameInstance.GameState.RUNNING) &&
-                        currentGameTime > gameConstants.getSuddenDeathMs()) {
-            game.setCurrentState(GameInstance.GameState.SUDDEN_DEATH);
-        }
-
-        if (players.size() <= 1) {
-            game.setCurrentState(GameInstance.GameState.ROUND_OVER);
-            //TODO: send payload to events topic
-        }
     }
 
     private void handlePlayerCollision(Player p1, Player p2, double dx, double dy, double distance) {
@@ -148,27 +147,26 @@ public class GameEngine {
         p2.setY(p2.getY() + separationDistance * ny);
     }
 
-    private void launchPlayer(Player player) {
-        // 1. Calculate the magnitude (speed) of the launch
-        double launchSpeed = player.getSize() * gameConstants.getLaunchPowerMultiplier();
+    private void updateGameState(GameInstance game, Map<String, Player> players, double deltaTime, long currentGameTime) {
+        for(Player player : players.values()) {
+            if (player.isEliminated()) {
+                game.getPlayers().remove(player.getSessionId());
+                //TODO: send payload to events topic
+            }
+        }
 
-        // 2. Get the player's angle in radians
-        double angle = player.getAngle();
+        if (game.getCurrentState().equals(GameInstance.GameState.SUDDEN_DEATH)) {
+            var arenaRadius = game.getCurrentArenaRadius() - (gameConstants.getArenaShrinkRate() * deltaTime);
+            game.setCurrentArenaRadius(arenaRadius);
+        } else if (
+                        game.getCurrentState().equals(GameInstance.GameState.RUNNING) &&
+                        currentGameTime > gameConstants.getSuddenDeathMs()) {
+            game.setCurrentState(GameInstance.GameState.SUDDEN_DEATH);
+        }
 
-        // 3. Calculate the X and Y components of the launch velocity
-        double launchVelocityX = Math.cos(angle) * launchSpeed;
-        double launchVelocityY = Math.sin(angle) * launchSpeed;
-
-        // 4. Add the launch velocity to the player's current velocity (as an impulse)
-        player.setVelocityX(player.getVelocityX() + launchVelocityX);
-        player.setVelocityY(player.getVelocityY() + launchVelocityY);
-
-        // 5. Reset the player's size to the initial value
-        player.setSize(gameConstants.getPlayerStartingMass());
-
-        // 6. Reset the flag so they don't launch again on the next frame
-        player.setGoingToExpel(false);
-
-        log.info("Player {} expelled with power {}!", player.getNickname(), launchSpeed);
+        if (players.size() <= 1) {
+            game.setCurrentState(GameInstance.GameState.ROUND_OVER);
+            //TODO: send payload to events topic
+        }
     }
 }
