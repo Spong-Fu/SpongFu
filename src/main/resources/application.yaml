@@ -16,9 +16,9 @@ app:
       player-growth-rate: 5.0 # Mass per second
       player-spin-rate-rad: 6 # Math.PI * 2 (Radians per second, 1 full rotation)
       friction-factor: 0.98 # Multiplier per frame
-      sudden-death-ms: 30000 # 30 seconds
-      arena-shrink-rate: 10.0 # Radius units per second
-      launch-power-multiplier: 15.0
+      sudden-death-ms: 5000 # 30 seconds
+      arena-shrink-rate: 15.0 # Radius units per second
+      launch-power-multiplier: 3
 
 # Add logging configuration for WebSocket/STOMP debugging
 logging:
@@ -26,8 +26,6 @@ logging:
     com.spongout.spongout: DEBUG
     org:
       springframework:
-        messaging: DEBUG
-        messaging.simp: TRACE
+        messaging: INFO
         web:
-          socket: DEBUG
-          socket.messaging: DEBUG
+          socket: INFO

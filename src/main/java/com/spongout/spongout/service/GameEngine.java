@@ -49,10 +49,34 @@ public class GameEngine {
         players.values().parallelStream().forEach(player -> {
             player.changeSize(gameConstants.getPlayerGrowthRate() * deltaTime);
             player.changeAngle(gameConstants.getPlayerSpinRateRad() * deltaTime);
+
+            // Move players based on their velocity
+            movePlayer(player, deltaTime);
+
             if (player.isGoingToExpel()) {
                 launchPlayer(player);
             }
         });
+    }
+
+    private void movePlayer(Player player, double deltaTime) {
+        // Update position based on velocity
+        player.setX(player.getX() + player.getVelocityX() * deltaTime);
+        player.setY(player.getY() + player.getVelocityY() * deltaTime);
+
+        // Apply friction to gradually slow down the player
+        // Friction is applied as a multiplier per frame, converted to per-second basis
+        double frictionMultiplier = Math.pow(gameConstants.getFrictionFactor(), deltaTime);
+        player.setVelocityX(player.getVelocityX() * frictionMultiplier);
+        player.setVelocityY(player.getVelocityY() * frictionMultiplier);
+
+        // Optional: Stop very small velocities to prevent floating point precision issues
+        if (Math.abs(player.getVelocityX()) < 0.01) {
+            player.setVelocityX(0);
+        }
+        if (Math.abs(player.getVelocityY()) < 0.01) {
+            player.setVelocityY(0);
+        }
     }
 
     private void launchPlayer(Player player) {
@@ -67,8 +91,11 @@ public class GameEngine {
         double launchVelocityY = Math.sin(angle) * launchSpeed;
 
         // 4. Add the launch velocity to the player's current velocity (as an impulse)
-        player.setVelocityX(player.getVelocityX() + launchVelocityX);
-        player.setVelocityY(player.getVelocityY() + launchVelocityY);
+//        player.setVelocityX(player.getVelocityX() + launchVelocityX);
+//        player.setVelocityY(player.getVelocityY() + launchVelocityY);
+        // lets try different approach
+        player.setVelocityX(launchVelocityX);
+        player.setVelocityY(launchVelocityY);
 
         // 5. Reset the player's size to the initial value
         player.setSize(gameConstants.getPlayerStartingSize());
