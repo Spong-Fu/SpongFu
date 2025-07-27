@@ -75,7 +75,7 @@ public class GameExecutionService {
         game.setCurrentState(GameInstance.GameState.RUNNING);
         game.setRoundStartTime(System.currentTimeMillis());
         game.setLastTickTime(System.currentTimeMillis());
-        game.spawnPlayers(gameConstants.getPlayerStartingMass());
+        game.spawnPlayers(gameConstants.getPlayerStartingSize());
         log.debug("InitialArenaRadius: {}", gameConstants.getArenaInitialRadius());
         log.debug("GAME SET-UP!, ID: {}", gameId);
         var gameLoop = taskScheduler.scheduleAtFixedRate(

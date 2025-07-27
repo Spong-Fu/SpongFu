@@ -15,7 +15,7 @@ public class GameConstants {
     private int countdownSeconds;
     private int roundMaxSeconds;
     private double arenaInitialRadius;
-    private double playerStartingMass;
+    private double playerStartingSize;
     private long tickRateMs;
     
     private double playerGrowthRate; // Mass per second

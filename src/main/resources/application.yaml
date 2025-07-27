@@ -10,7 +10,7 @@ app:
       countdown-seconds: 5
       round-max-seconds: 20
       arena-initial-radius: 500.0
-      player-starting-mass: 1.0
+      player-starting-size: 1.0
       tick-rate-ms: 16 # 16 = about 60fps (1000/60)
 
       player-growth-rate: 5.0 # Mass per second
