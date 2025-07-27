@@ -1,3 +1,4 @@
+
 const drawTriangleChunk = (x, y, size) => {
 	beginShape();
 	for (let i=0; i<3; i++) {
@@ -10,6 +11,7 @@ const drawTriangleChunk = (x, y, size) => {
 	endShape(CLOSE);
 }
 
+
 const drawHSBBackground = () => {
 	push();
 	colorMode(HSB, 360, 100, 100, 255);
@@ -18,7 +20,7 @@ const drawHSBBackground = () => {
 	for (let x=0; x<width+density; x+=density) {
 		for (let y =0; y<height + density; y+=density) {
 		let h = random(20, 40);
-		let s = random(80,100);
+		let s = random(80, 100);
 		let b = random(70, 100);
 		fill(h, s, b, 150);
 		drawTriangleChunk(x, y, density);
@@ -56,12 +58,24 @@ const dynamicSizedArenaAndPlatform = (aspectRatioWidth, aspectRatioHeight) => {
 	return [arena, platform];
 }
 
-let players = []
-let pointer
-const numPlayers = 1
+
+let players = [];
+let pointer;
+const numPlayers = 1;
 // style out these 2 please
 const [arena, platform] = dynamicSizedArenaAndPlatform(2,1);
-let gameOver = false
+let gameOver = false;
+let spongeImg;
+let googleEyes;
+let aimingTriangle;
+
+
+function preload() {
+	spongeImg = loadImage("./assets/sponge-svgrepo-com.svg");
+	googleEyes = loadImage("./assets/googley-eyes-1.svg");
+	aimingTriangle = loadImage("./assets/aiming-triangle.svg");
+}
+
 
 function setup() {
 	let canvas = createCanvas(arena.w, arena.h)
@@ -160,9 +174,20 @@ class Player {
 	}
 
 	draw() {
+		push();
+		imageMode(CENTER);
+
+		let size = this.r * 6;
+		image(spongeImg, this.pos.x, this.pos.y, size, size);
+
+		let eyeSize = size * 0.6;
+		image(googleEyes, this.pos.x, this.pos.y - this.r * 0.1, eyeSize, eyeSize);
+		pop();
+		/*
 		fill(this.col)
 		noStroke()
 		ellipse(this.pos.x, this.pos.y, this.r * 2)
+		*/
 	}
 
 	launch(angle) {
