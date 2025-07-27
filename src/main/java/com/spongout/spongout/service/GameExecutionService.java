@@ -104,8 +104,7 @@ public class GameExecutionService {
         // 3. Create the Data Transfer Object (DTO) from the updated game state.
         GameStateDto gameStateDto = new GameStateDto(
                 playerDTOs,
-                game.getCurrentArenaRadius(),
-                game.getCurrentState().toString()
+                game.getCurrentArenaRadius()
         );
 
         // 4. Broadcast the complete world state to all players in this game.
