@@ -10,7 +10,13 @@ var latestGameEvent = null;
 
 // --- p5.js Sketch ---
 const arena = { w: 800, h: 400 };
-const platform = { x: 100, y: 300, w: 600, h: 90 };
+let spongeImg;
+let googleyEyes;
+
+function preload() {
+	spongeImg = loadImage("./assets/sponge-svgrepo-com.svg");
+	googleyEyes = loadImage("./assets/googley-eyes-1.svg");
+}
 
 function setup() {
     // Create a larger square canvas to accommodate the circular arena
@@ -45,6 +51,7 @@ function initializeLobby() {
 }
 
 window.addEventListener('DOMContentLoaded', initializeLobby);
+
 
 function draw() {
     background(34);
@@ -102,9 +109,16 @@ function drawPlayer(playerDto) {
     const screenX = x + width / 2;
     const screenY = y + height / 2;
 
-    fill('#FFC0CB');
-    noStroke();
-    ellipse(screenX, screenY, size * 2);
+    //fill('#FFC0CB');
+    //noStroke();
+    //ellipse(screenX, screenY, size * 2);
+		push();
+		imageMode(CENTER);
+		const spongeSize = size * 2;
+		const eyeSize = spongeSize * .4;
+		image(spongeImg, screenX, screenY, spongeSize, spongeSize);
+		image(googleyEyes, screenX, screenY - spongeSize *.1, eyeSize, eyeSize)
+		pop();
 
     fill(255);
     textAlign(CENTER, BOTTOM);
