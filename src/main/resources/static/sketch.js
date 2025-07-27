@@ -1,84 +1,3 @@
-// Configuration
-const config = {
-    BROKER_URL: 'ws://localhost:8080/ws'
-};
-
-//Rendering Functions
-const drawTriangleChunk = (x, y, size) => {
-	beginShape();
-	for (let i=0; i<3; i++) {
-		let angle = random(TWO_PI);
-		let radius = random(size /2, size);
-		let vx = x + radius * cos(angle);
-		let vy = y + radius * sin(angle);
-		vertex(vx, vy);
-	}
-	endShape(CLOSE);
-}
-
-
-const drawHSBBackground = () => {
-	push();
-	colorMode(HSB, 360, 100, 100, 255);
-	noStroke();
-	const density = 100; 
-	for (let x=0; x<width+density; x+=density) {
-		for (let y =0; y<height + density; y+=density) {
-		let h = random(20, 40);
-		let s = random(80, 100);
-		let b = random(70, 100);
-		fill(h, s, b, 150);
-		drawTriangleChunk(x, y, density);
-
-	}
- }
-	pop();
-}
-
-
-const drawBackground = () => {
-	push();
-	noStroke();
-	const density = 100; //triangle size
-	for (let x=0; x<width+density; x+=density) {
-		for (let y=0; y<height+density; y += density) {
-			let r = random(30, 60);
-			let g = random(25, 40);
-			let b = random(20, 30);
-			fill(r, g, b, 150);
-			drawTriangleChunk(x, y, density);
-		}
-	}
-	pop();
-}
-
-const createArenaScaler = () => {
-	let maxRadius;
-
-	const getScaledArenaRadius = (arenaRadius) => {
-		const currentRadius = arenaRadius;
-		if (!maxRadius) {
-			maxRadius = currentRadius;
-		}
-
-		const scale = (Math.min(width / 2, height /2)) / maxRadius;
-
-		return currentRadius * scale;
-	}
-
-	return getScaledArenaRadius;
-}
-
-
-
-//canvas takes up 80% of screen and sets height to desired aspect ratio.
-const dynamicSizedArena = (aspectRatioWidth, aspectRatioHeight) => {
-	const arena = { w: window.innerWidth * .8, h: (window.innerWidth * .8) * (aspectRatioHeight/aspectRatioWidth) };
-
-	return arena;
-}
-
-
 // --- Networking & State Management ---
 var client;
 // We no longer need mySessionId, as we will use myNickname to identify our player.
@@ -88,22 +7,16 @@ var myNickname = null;
 
 var latestGameState = null;
 var latestGameEvent = null;
-let spongeImg;
-let googleyEyes;
 
 // --- p5.js Sketch ---
-
-function preload() {
-	spongeImg = loadImage("./assets/sponge-svgrepo-com.svg");
-	googleyEyes = loadImage("./assets/googley-eyes-1.svg");
-}
-
+const arena = { w: 800, h: 400 };
+const platform = { x: 100, y: 300, w: 600, h: 90 };
 
 function setup() {
     // Create a larger square canvas to accommodate the circular arena
     // The initial arena radius is 500, so we need at least 1000x1000 canvas
-		const arena = dynamicSizedArena(2,1);
-    let canvas = createCanvas(arena.w, arena.h);
+    let canvasSize = 1200; // Give some extra space for UI elements
+    let canvas = createCanvas(canvasSize, canvasSize);
     canvas.parent("game-container");
 }
 
@@ -120,7 +33,7 @@ function initializeLobby() {
                 myNickname = nickname; // Store the nickname
                 isJoining = true;
                 lobby.style.display = 'none';
-								gameContainer.style.display = "block";
+                gameContainer.style.display = 'block';
                 initNetworking(nickname);
             } else {
                 alert('Please enter a nickname!');
@@ -133,29 +46,24 @@ function initializeLobby() {
 
 window.addEventListener('DOMContentLoaded', initializeLobby);
 
-const scaledArenaRadius = createArenaScaler();
-
 function draw() {
-		drawBackground();
+    background(34);
 
     if (!isJoining && gameId && latestGameState) {
         // Draw circular arena using the radius from the server
         let centerX = width / 2;
         let centerY = height / 2;
         let arenaRadius = latestGameState.arenaRadius;
-				const scaledRadius = scaledArenaRadius(arenaRadius);
 
         // Draw arena boundary circle
         noFill();
         stroke(200);
         strokeWeight(2);
-        ellipse(centerX, centerY, scaledRadius * 2);
+        ellipse(centerX, centerY, arenaRadius * 2);
 
-				/*
         // Optional: Add a subtle fill to show the playable area
         fill(50, 50, 50, 50); // Dark gray with transparency
         ellipse(centerX, centerY, arenaRadius * 2);
-				*/
     }
 
     let status = '';
@@ -194,20 +102,9 @@ function drawPlayer(playerDto) {
     const screenX = x + width / 2;
     const screenY = y + height / 2;
 
-		/*
     fill('#FFC0CB');
     noStroke();
-
     ellipse(screenX, screenY, size * 2);
-		*/
-		push();
-		imageMode(CENTER);
-		const spongeSize = size * 2
-		const eyeSize = spongeSize * .6;
-
-		image(spongeImg, screenX, screenY, spongeSize, spongeSize );
-		image(googleyEyes, screenX, screenY - size*.1, eyeSize, eyeSize);
-		pop();
 
     fill(255);
     textAlign(CENTER, BOTTOM);
@@ -246,7 +143,7 @@ function keyPressed() {
 
 function initNetworking(nickname) {
     client = new StompJs.Client({
-        brokerURL: config.BROKER_URL,
+        brokerURL: 'ws://localhost:8080/ws',
         reconnectDelay: 5000,
         debug: msg => console.log('[STOMP]', msg),
         onConnect: (frame) => {
