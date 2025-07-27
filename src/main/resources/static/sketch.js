@@ -1,3 +1,33 @@
+//background drawing functions
+const drawTriangleChunk = (x, y, size) => {
+	beginShape();
+	for (let i=0; i<3; i++) {
+		let angle = random(TWO_PI);
+		let radius = random(size /2, size);
+		let vx = x + radius * cos(angle);
+		let vy = y + radius * sin(angle);
+		vertex(vx, vy);
+	}
+	endShape(CLOSE);
+}
+
+
+const drawBackground = () => {
+	push();
+	noStroke();
+	const density = 100; //triangle size
+	for (let x=0; x<width+density; x+=density) {
+		for (let y=0; y<height+density; y += density) {
+			let r = random(30, 60);
+			let g = random(25, 40);
+			let b = random(20, 30);
+			fill(r, g, b, 150);
+			drawTriangleChunk(x, y, density);
+		}
+	}
+	pop();
+}
+
 // --- Networking & State Management ---
 var client;
 // We no longer need mySessionId, as we will use myNickname to identify our player.
@@ -54,7 +84,8 @@ window.addEventListener('DOMContentLoaded', initializeLobby);
 
 
 function draw() {
-    background(34);
+    //background(34);
+		drawBackground();
 
     if (!isJoining && gameId && latestGameState) {
         // Draw circular arena using the radius from the server
@@ -109,9 +140,6 @@ function drawPlayer(playerDto) {
     const screenX = x + width / 2;
     const screenY = y + height / 2;
 
-    //fill('#FFC0CB');
-    //noStroke();
-    //ellipse(screenX, screenY, size * 2);
 		push();
 		imageMode(CENTER);
 		const spongeSize = size * 2;

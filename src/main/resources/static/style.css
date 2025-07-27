@@ -27,8 +27,15 @@ h1 {
 	font-family: 'Baloo 2', cursive;
 }
 
+a {
+	font-size: 2rem;
+	margin-left: 3px;
+	margin-right: 3px;
+	text-decoration: none;
+	margin-top: 100px;
+}
+
 body {
-    background-color: #222;
     color: #eee;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     display: flex;
@@ -37,7 +44,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    overflow: hidden;
+    /*overflow: hidden*/;
 }
 
 #lobby {
@@ -73,7 +80,7 @@ body {
 }
 #game-container {
     border-radius: 8px;
-    overflow: hidden;
+    /*overflow: hidden;*/
     box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 6px 6px rgba(0,0,0,0.25);
     /* Initially hidden */
 		display: none;
