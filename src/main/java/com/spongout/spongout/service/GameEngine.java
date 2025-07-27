@@ -98,7 +98,7 @@ public class GameEngine {
         player.setVelocityY(launchVelocityY);
 
         // 5. Reset the player's size to the initial value
-        player.setSize(gameConstants.getPlayerStartingSize());
+//        player.setSize(gameConstants.getPlayerStartingSize());
 
         // 6. Reset the flag so they don't launch again on the next frame
         player.setGoingToExpel(false);
