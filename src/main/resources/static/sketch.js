@@ -1,3 +1,61 @@
+//Rendering Functions
+const drawTriangleChunk = (x, y, size) => {
+	beginShape();
+	for (let i=0; i<3; i++) {
+		let angle = random(TWO_PI);
+		let radius = random(size /2, size);
+		let vx = x + radius * cos(angle);
+		let vy = y + radius * sin(angle);
+		vertex(vx, vy);
+	}
+	endShape(CLOSE);
+}
+
+
+const drawHSBBackground = () => {
+	push();
+	colorMode(HSB, 360, 100, 100, 255);
+	noStroke();
+	const density = 100; 
+	for (let x=0; x<width+density; x+=density) {
+		for (let y =0; y<height + density; y+=density) {
+		let h = random(20, 40);
+		let s = random(80, 100);
+		let b = random(70, 100);
+		fill(h, s, b, 150);
+		drawTriangleChunk(x, y, density);
+
+	}
+ }
+	pop();
+}
+
+
+const drawBackground = () => {
+	push();
+	noStroke();
+	const density = 100; //triangle size
+	for (let x=0; x<width+density; x+=density) {
+		for (let y=0; y<height+density; y += density) {
+			let r = random(30, 60);
+			let g = random(25, 40);
+			let b = random(20, 30);
+			fill(r, g, b, 150);
+			drawTriangleChunk(x, y, density);
+		}
+	}
+	pop();
+}
+
+
+//canvas takes up 80% of screen and sets height to desired aspect ratio.
+const dynamicSizedArena = (aspectRatioWidth, aspectRatioHeight) => {
+	const arena = { w: window.innerWidth * .8, h: (window.innerWidth * .8) * (aspectRatioHeight/aspectRatioWidth) };
+
+	return arena;
+}
+
+
 // --- Networking & State Management ---
 var client;
 // We no longer need mySessionId, as we will use myNickname to identify our player.
@@ -9,14 +67,12 @@ var latestGameState = null;
 var latestGameEvent = null;
 
 // --- p5.js Sketch ---
-const arena = { w: 800, h: 400 };
-const platform = { x: 100, y: 300, w: 600, h: 90 };
 
 function setup() {
     // Create a larger square canvas to accommodate the circular arena
     // The initial arena radius is 500, so we need at least 1000x1000 canvas
-    let canvasSize = 1200; // Give some extra space for UI elements
-    let canvas = createCanvas(canvasSize, canvasSize);
+		const arena = dynamicSizedArena(2,1);
+    let canvas = createCanvas(arena.w, arena.h);
     canvas.parent("game-container");
 }
 
@@ -33,7 +89,7 @@ function initializeLobby() {
                 myNickname = nickname; // Store the nickname
                 isJoining = true;
                 lobby.style.display = 'none';
-                gameContainer.style.display = 'block';
+								gameContainer.style.display = "block";
                 initNetworking(nickname);
             } else {
                 alert('Please enter a nickname!');
