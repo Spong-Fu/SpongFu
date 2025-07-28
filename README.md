@@ -2,7 +2,7 @@
 
 ## TL;DR
 PLAY HERE: **https://spong-fu.dev/**
-
+PRESS `SPACEBAR` TO WIN
 **STAR OUR REPO ;)**
 
 ## What is this Game?
