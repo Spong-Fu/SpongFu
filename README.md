@@ -35,11 +35,11 @@ For communication Client <-> Server we used WebSockets w/ STOMP protocol over it
 2. Types nickname
 3. this request goes to `GameLobbyService` (through `GameController`)
 4. In this place, we create `GameInstance` from gathered players (2-5 players for each game)
-5. And throw them right into `GameExecutionService`
-6. Here we store all currently played GameInstances and making them alive! Their `GameState` is updating 60x/s and it's sended to all subscribers (players)
-7. In every `tick()` `GameInstance` goes from `GameExecutionService` to `GameEngine` for players positions updates & colissions checking. This is also the place where we get our players moving!
-8. In every `tick()` we also check if someone was eliminated or game ended and we got a winner already. All this infos are sent to players via WebSockets to keep them updated.
-9. If only one players is left - then we got a WINNER!
+6. And throw them right into `GameExecutionService` and this is the moment when **GAME STARTS!**
+7. Here we store all currently played GameInstances and making them alive! Their `GameState` is updating 60x/s and it's sended to all subscribers (players)
+8. In every `tick()` `GameInstance` goes from `GameExecutionService` to `GameEngine` for players positions updates & colissions checking. This is also the place where we get our players moving!
+9. In every `tick()` we also check if someone was eliminated or game ended and we got a winner already. All this infos are sent to players via WebSockets to keep them updated.
+10. If only one players is left - then we **got a WINNER and GAME is finished!**
 
 ### Frontend
 // Add FE infos here
