@@ -25,7 +25,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         "http://127.0.0.1:*",
                         "https://127.0.0.1:*",
                         "https://game.mackiewicz.info",
-                        "http://game.mackiewicz.info"
+                        "http://game.mackiewicz.info",
+                        "http://spong-fu.dev",
+                        "https://spong-fu.dev"
                 );
     }
 
