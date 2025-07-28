@@ -2,6 +2,7 @@ spring:
   application:
     name: SpongOut
 
+# it should go to .env but didnt have time for that
 app:
   config:
     game:
@@ -13,12 +14,12 @@ app:
       player-starting-size: 20.0
       tick-rate-ms: 16 # 16 = about 60fps (1000/60)
 
-      player-growth-rate: 3.0 # Mass per second
-      player-spin-rate-rad: 6 # Math.PI * 2 (Radians per second, 1 full rotation)
-      friction-factor: 0.6 # Multiplier per frame
-      sudden-death-ms: 5000 # 30 seconds
-      arena-shrink-rate: 10.0 # Radius units per second
-      launch-power-multiplier: 15
+      player-growth-rate: 6.0 # Mass per second
+      player-spin-rate-rad: 4 # Math.PI * 2 (Radians per second, 1 full rotation)
+      friction-factor: 0.5 # Multiplier per frame
+      sudden-death-ms: 5000 # 5 seconds
+      arena-shrink-rate: 15.0 # Radius units per second
+      launch-power-multiplier: 12
 
 # Add logging configuration for WebSocket/STOMP debugging
 logging:
