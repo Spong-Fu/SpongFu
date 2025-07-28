@@ -1,4 +1,6 @@
-<img width="1046" height="446" alt="image" src="https://github.com/user-attachments/assets/54202737-12b4-44d0-9aaa-24b0086dde1d" /># Spong-Fu
+# Spong-Fu
+
+<img width="512" height="512" alt="20250728_1539_Sponge Combat Logo_simple_compose_01k18m1rr6fggbhctzd4a4ajq5-min" src="https://github.com/user-attachments/assets/cc144bb1-175e-45a8-9684-45ffb37a1f3f" />
 
 ## TL;DR
 PLAY HERE: **https://spong-fu.dev/**<br>
