@@ -23,6 +23,23 @@ It’s fast, ridiculous, and deceptively skill-based.
 
 Oh—and it all runs in your browser. No downloads. Just instant, synchronized chaos powered by a server that keeps things fair (even if nothing *feels* fair).
 
+## How to run it locally
+If you have docker - then:
+```
+docker run pmackiewicz6/spongout-image:latest
+```
+And go to `http://localhost:8080`
+
+If not then:
+### Requirements
+Java 21
+
+### Instructions
+1. Clone repo
+2. `cd` to dir
+3. `./mvnw spring-boot:run`
+4. And go to `http://localhost:8080`
+
 ## Some Technical Blabla
 
 ### Backend
@@ -49,9 +66,9 @@ And as written in Backend, we are using STOMP for our socket connections
 #### How does it work?
 1. Lobby & Connection: We connect to the socket with `initNetworking` and wait for the user to enter a nickname and click "Join Game". Clicking "Join Game" you'll create a lobby/ gameId.
 2. Game Start: Now you wait, when someone else clicks join game, they join your lobby, now you can play with just the 2 of you or wait for others.
-3. Player Input: You hit SPACEBAR to move whuch triggers the `keyPressed()` function.
+3. Player Input: You hit SPACEBAR to move which triggers the `keyPressed()` function.
 4. Rendering: From the socket connection we receive coordinates in real time from `onPrivateMessage()` and that gives us all the updated states and we draw those states using p5.js.
 5. Elimination and Victory: These are also handled through `onPrivateMessage()`, and the `FloatingText` class.
 6. My first time writing a readme, so if it's not alright pls understand :)
 
-#Have fun :)
+# Have fun :)
