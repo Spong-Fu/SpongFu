@@ -43,7 +43,7 @@ let googleyEyes;
 var floatingTexts = [];
 
 class FloatingText {
-    constructor(message, x, y) {
+    constructor(message, x, y, type) {
         this.message = message;
         this.x = x;
         this.y = y;
@@ -269,9 +269,8 @@ function onPrivateMessage(message) {
             console.log("latestGameEvent: ",latestGameEvent);
             
 
-            if (latestGameEvent.eventType === 'PLAYER_ELIMINATED' && latestGameState) {
+            if (latestGameEvent.eventType === 'PLAYER_ELIMINATED') {
                 const eliminatedPlayerNickname = latestGameEvent.message;
-                
 
                 if (eliminatedPlayerNickname === myNickname) {
                     floatingTexts.push(new FloatingText("You were eliminated!", width / 2, height / 2, 'local'));
