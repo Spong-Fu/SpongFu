@@ -115,6 +115,7 @@ function initializeLobby() {
     } else {
         console.error("Lobby elements could not be found.");
     }
+    
 }
 
 window.addEventListener('DOMContentLoaded', initializeLobby);
@@ -168,7 +169,7 @@ function draw() {
     }
 
     if (winnerInfo) {
-        drawStatusText("Congrats!! ",winnerInfo.message + " you won!!");
+        drawStatusText(winnerInfo.message );
     }
 }
 
@@ -282,7 +283,12 @@ function onPrivateMessage(message) {
                 }
             }
         } else if (latestGameEvent.eventType === 'ROUND_WINNER') {
-            winnerInfo = { message: latestGameEvent.message };
+            const winnerNickname = latestGameEvent.message;
+            if (winnerNickname === myNickname) {
+                winnerInfo = { message: "Congratulations!! You Win!" };
+            } else {
+                winnerInfo = { message: `${winnerNickname} wins!, better luck next time` };
+            }
         }
     });
 }
