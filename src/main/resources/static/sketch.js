@@ -185,7 +185,7 @@ function keyPressed() {
 
 function initNetworking(nickname) {
     client = new StompJs.Client({
-        brokerURL: 'ws://localhost:8080/ws',
+        brokerURL: 'wss://game.mackiewicz.info/ws',
         reconnectDelay: 5000,
         debug: msg => console.log('[STOMP]', msg),
         onConnect: (frame) => {

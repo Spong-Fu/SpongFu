@@ -180,6 +180,7 @@ public class GameEngine {
         p2.setY(p2.getY() + separationDistance * ny);
     }
 
+    //this should go to GameExecutionService probably
     private void updateGameState(GameInstance game, double deltaTime, long currentGameTime) {
         //check if SUDDEN_DEATH ON
         if (game.getCurrentState().equals(GameInstance.GameState.SUDDEN_DEATH)) {
@@ -199,6 +200,7 @@ public class GameEngine {
     }
 
     private void eliminatePlayer(GameInstance game, Player player) {
+        log.debug("PLAYER: {} ELIMINATED", player.getNickname());
         var payload = new GameEventDto(GameEventType.PLAYER_ELIMINATED, player.getNickname());
         simpMessagingTemplate.convertAndSend(WebSocketConstants.GAME_EVENTS_TOPIC + game.getGameId(), payload);
         player.setEliminated(true);
