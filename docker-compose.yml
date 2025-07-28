@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: spongout
-    image: pmackiewicz6/spongout-image:v1
+    image: pmackiewicz6/spongout-image:latest
     ports:
       - "80:8099"
     restart: unless-stopped
