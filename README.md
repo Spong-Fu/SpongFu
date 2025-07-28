@@ -1,4 +1,4 @@
-# Spong-Fu
+<img width="1046" height="446" alt="image" src="https://github.com/user-attachments/assets/54202737-12b4-44d0-9aaa-24b0086dde1d" /># Spong-Fu
 
 ## TL;DR
 PLAY HERE: **https://spong-fu.dev/**<br>
@@ -72,3 +72,7 @@ And as written in Backend, we are using STOMP for our socket connections
 6. My first time writing a readme, so if it's not alright pls understand :)
 
 # Have fun :)
+
+## Worth to mention
+<img width="1046" height="446" alt="image" src="https://github.com/user-attachments/assets/81a44334-bea5-40ca-aa04-645feb39dc3d" />
+You can configure server settings and physics with `/src/main/resources/application.yaml` file.
