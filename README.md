@@ -42,4 +42,16 @@ For communication Client <-> Server we used WebSockets w/ STOMP protocol over it
 10. If only one players is left - then we **got a WINNER and GAME is finished!**
 
 ### Frontend
-// Add FE infos here
+The Frontend is written in... **Plain JavaScript**
+We are using P5.js library for our canva and game design, and it's definitely not clean code frontend is also messy as hell, hope that's not a problem
+And as written in Backend, we are using STOMP for our socket connections
+
+#### How does it work?
+1. Lobby & Connection: We connect to the socket with `initNetworking` and wait for the user to enter a nickname and click "Join Game". Clicking "Join Game" you'll create a lobby/ gameId.
+2. Game Start: Now you wait, when someone else clicks join game, they join your lobby, now you can play with just the 2 of you or wait for others.
+3. Player Input: You hit SPACEBAR to move whuch triggers the `keyPressed()` function.
+4. Rendering: From the socket connection we receive coordinates in real time from `onPrivateMessage()` and that gives us all the updated states and we draw those states using p5.js.
+5. Elimination and Victory: These are also handled through `onPrivateMessage()`, and the `FloatingText` class.
+6. My first time writing a readme, so if it's not alright pls understand :)
+
+#Have fun :)
