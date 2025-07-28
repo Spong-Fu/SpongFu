@@ -27,6 +27,12 @@ h1 {
 	font-family: 'Baloo 2', cursive;
 }
 
+p {
+	color: hsl(300, 70%, 45%);
+	font-size: 1.6rem;
+	font-family: 'Baloo 2', cursive;
+}
+
 a {
 	font-size: 2rem;
 	margin-left: 3px;
