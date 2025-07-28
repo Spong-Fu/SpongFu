@@ -36,7 +36,6 @@ var winnerInfo = null;
 var latestGameState = null;
 var latestGameEvent = null;
 
-const arena = { w: 800, h: 400 };
 let spongeImg;
 let googleyEyes;
 
@@ -127,7 +126,7 @@ function draw() {
     if (!isJoining && gameId && latestGameState) {
         let centerX = width / 2;
         let centerY = height / 2;
-        let arenaRadius = latestGameState.arenaRadius;
+        let arenaRadius = latestGameState.arenaRadius * 0.95; // Make arena 0.9x the size from BE
 
         noFill();
         stroke(200);
