@@ -227,7 +227,7 @@ function keyPressed() {
 
 function initNetworking(nickname) {
     client = new StompJs.Client({
-        brokerURL: 'ws://game.mackiewicz.info/ws',
+        brokerURL: 'ws://localhost:8080/ws',
         reconnectDelay: 5000,
         debug: msg => console.log('[STOMP]', msg),
         onConnect: (frame) => {
@@ -285,7 +285,7 @@ function onPrivateMessage(message) {
         } else if (latestGameEvent.eventType === 'ROUND_WINNER') {
             const winnerNickname = latestGameEvent.message;
             if (winnerNickname === myNickname) {
-                winnerInfo = { message: "Congratulations!! You Win!" };
+                winnerInfo = { message: "Congratulations!! You Won!" };
             } else {
                 winnerInfo = { message: `${winnerNickname} wins!, better luck next time` };
             }
