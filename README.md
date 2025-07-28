@@ -1,8 +1,8 @@
 # Spong-Fu
 
 ## TL;DR
-PLAY HERE: **https://spong-fu.dev/**
-PRESS `SPACEBAR` TO WIN
+PLAY HERE: **https://spong-fu.dev/**<br>
+PRESS `SPACEBAR` TO WIN<br>
 **STAR OUR REPO ;)**
 
 ## What is this Game?
