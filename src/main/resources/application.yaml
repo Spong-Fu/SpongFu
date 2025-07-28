@@ -2,7 +2,7 @@ server:
   port: 8099
 spring:
   application:
-    name: SpongOut
+    name: SpongFu
 
 # it should go to .env but didnt have time for that
 app:

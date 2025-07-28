@@ -232,7 +232,7 @@ function keyPressed() {
 
 function initNetworking(nickname) {
     client = new StompJs.Client({
-        brokerURL: 'wss://game.mackiewicz.info/ws',
+        brokerURL: 'wss://spong-fu.dev/ws',
         reconnectDelay: 5000,
         debug: msg => console.log('[STOMP]', msg),
         onConnect: (frame) => {
