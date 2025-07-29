@@ -95,7 +95,7 @@ function setup() {
 
 function initializeLobby() {
     const joinButton = document.getElementById('join-button');
-    const nicknameInput = document.getElementById('nickname');
+    const nicknameInput = new URLSearchParams(window.location.search).get("nickName");
     const lobby = document.getElementById('lobby');
     const gameContainer = document.getElementById('game-container');
 
