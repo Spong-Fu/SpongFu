@@ -94,28 +94,12 @@ function setup() {
 }
 
 function initializeLobby() {
-    const joinButton = document.getElementById('join-button');
     const nicknameInput = new URLSearchParams(window.location.search).get("nickName");
-    const lobby = document.getElementById('lobby');
+		myNickname = nicknameInput.trim();
+		isJoining = true;
     const gameContainer = document.getElementById('game-container');
-
-    if (joinButton && nicknameInput && lobby && gameContainer) {
-        joinButton.onclick = () => {
-            const nickname = nicknameInput.value.trim();
-            if (nickname) {
-                myNickname = nickname; 
-                isJoining = true;
-                lobby.style.display = 'none';
-                gameContainer.style.display = 'block';
-                initNetworking(nickname);
-            } else {
-                alert('Please enter a nickname!');
-            }
-        };
-    } else {
-        console.error("Lobby elements could not be found.");
-    }
-    
+    gameContainer.style.display = 'block';
+    initNetworking(myNickname);
 }
 
 window.addEventListener('DOMContentLoaded', initializeLobby);

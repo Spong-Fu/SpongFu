@@ -11,7 +11,7 @@ public class PageRoutingController {
     public String routeUser(HttpServletRequest request) {
         String query = request.getQueryString();
         return (query == null || query.isBlank())
-            ? "redirect:/nameForm.html"
-            : "redirect:/index.html?" + query;
+            ? "forward:/nameForm.html"
+            : "forward:/index.html?" + query;
     }
 }
