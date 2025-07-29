@@ -12,6 +12,6 @@ public class PageRoutingController {
         String query = request.getQueryString();
         return (query == null || query.isBlank())
             ? "redirect:/nameForm.html"
-            : "redirect:/index.html";
+            : "redirect:/index.html?" + query;
     }
 }
